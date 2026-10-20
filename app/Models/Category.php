@@ -9,7 +9,14 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'media_id'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'media_id',
+        'fb_pixel_id',
+        'fb_capi_token',
+    ];
 
     public function products()
     {

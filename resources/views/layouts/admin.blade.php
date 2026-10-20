@@ -9,7 +9,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <style>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
         body { font-family: 'Inter', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
@@ -50,13 +52,10 @@
             </a>
             
             <!-- Catalog Group -->
-            @php $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*', 'admin.tags.*'); @endphp
-            <div x-data="{ open: {{ $isCatalogActive ? 'true' : 'false' }} }" 
-                 @mouseenter="open = true" 
-                 @mouseleave="open = {{ $isCatalogActive ? 'true' : 'false' }}"
-                 class="relative">
+            @php $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*', 'admin.tags.*', 'admin.bundles.*'); @endphp
+            <div x-data="{ open: {{ $isCatalogActive ? 'true' : 'false' }} }" class="relative">
                  
-                <div class="flex items-center justify-between px-4 py-3 {{ $isCatalogActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
+                <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isCatalogActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
                     <div class="flex items-center">
                         <i data-lucide="shopping-bag" class="w-5 h-5 mr-3 {{ $isCatalogActive ? 'text-primary' : '' }}"></i>
                         <span>Catalog</span>
@@ -81,17 +80,17 @@
                     <a href="{{ route('admin.tags.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.tags.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
                         Tags
                     </a>
+                    <a href="{{ route('admin.bundles.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.bundles.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Product Bundles
+                    </a>
                 </div>
             </div>
             
             <!-- Storefront Group -->
             @php $isStorefrontActive = request()->routeIs('admin.banners.*', 'admin.featured_products.*', 'admin.homepage-builder.*'); @endphp
-            <div x-data="{ open: {{ $isStorefrontActive ? 'true' : 'false' }} }" 
-                 @mouseenter="open = true" 
-                 @mouseleave="open = {{ $isStorefrontActive ? 'true' : 'false' }}"
-                 class="relative">
+            <div x-data="{ open: {{ $isStorefrontActive ? 'true' : 'false' }} }" class="relative">
                  
-                <div class="flex items-center justify-between px-4 py-3 {{ $isStorefrontActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
+                <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isStorefrontActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
                     <div class="flex items-center">
                         <i data-lucide="layout" class="w-5 h-5 mr-3 {{ $isStorefrontActive ? 'text-primary' : '' }}"></i>
                         <span>Storefront</span>
@@ -128,14 +127,16 @@
                 <span>Orders</span>
             </a>
             
+            <a href="{{ route('admin.abandoned-carts.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.abandoned-carts.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="shopping-bag" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.abandoned-carts.*') ? 'text-primary' : '' }}"></i>
+                <span>Abandoned Carts</span>
+            </a>
+            
             <!-- Analytics Group -->
-            @php $isAnalyticsActive = request()->routeIs('admin.customers.*'); @endphp
-            <div x-data="{ open: {{ $isAnalyticsActive ? 'true' : 'false' }} }" 
-                 @mouseenter="open = true" 
-                 @mouseleave="open = {{ $isAnalyticsActive ? 'true' : 'false' }}"
-                 class="relative">
+            @php $isAnalyticsActive = request()->routeIs('admin.customers.*', 'admin.analytics.*'); @endphp
+            <div x-data="{ open: {{ $isAnalyticsActive ? 'true' : 'false' }} }" class="relative">
                  
-                <div class="flex items-center justify-between px-4 py-3 {{ $isAnalyticsActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
+                <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isAnalyticsActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
                     <div class="flex items-center">
                         <i data-lucide="pie-chart" class="w-5 h-5 mr-3 {{ $isAnalyticsActive ? 'text-primary' : '' }}"></i>
                         <span>Analytics</span>
@@ -154,6 +155,29 @@
                     <a href="{{ route('admin.customers.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.customers.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
                         Customers
                     </a>
+                    
+                    <div class="px-3 pt-3 pb-1">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Tracking</p>
+                    </div>
+                    
+                    <a href="{{ route('admin.analytics.dashboard') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.analytics.dashboard') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Live Tracking
+                    </a>
+                    <a href="{{ route('admin.analytics.overview') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.analytics.overview') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Overview
+                    </a>
+                    <a href="{{ route('admin.analytics.products') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.analytics.products') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Products
+                    </a>
+                    <a href="{{ route('admin.analytics.geography') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.analytics.geography') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Geography
+                    </a>
+                    <a href="{{ route('admin.analytics.traffic') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.analytics.traffic') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Traffic Sources
+                    </a>
+                    <a href="{{ route('admin.analytics.funnel') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.analytics.funnel') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Conversion Funnel
+                    </a>
                 </div>
             </div>
             
@@ -169,11 +193,51 @@
                 @endif
             </a>
             
-            <!-- Settings -->
-            <a href="{{ route('admin.settings.api') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.settings.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
-                <i data-lucide="settings" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.settings.*') ? 'text-primary' : '' }}"></i>
-                <span>API Settings</span>
+            <a href="{{ route('admin.users.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.users.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="users" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.users.*') ? 'text-primary' : '' }}"></i>
+                <span>Users & Roles</span>
             </a>
+
+            <!-- Settings Group -->
+            @php $isSettingsActive = request()->routeIs('admin.settings.*'); @endphp
+            <div x-data="{ open: {{ $isSettingsActive ? 'true' : 'false' }} }" class="relative">
+                 
+                <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isSettingsActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
+                    <div class="flex items-center">
+                        <i data-lucide="settings" class="w-5 h-5 mr-3 {{ $isSettingsActive ? 'text-primary' : '' }}"></i>
+                        <span>Settings</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 {{ $isSettingsActive ? 'text-primary' : 'text-gray-400' }}" :class="{ 'rotate-180': open }"></i>
+                </div>
+                
+                <div x-show="open" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-2"
+                     class="pl-11 pr-4 py-2 space-y-1 mt-1 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+                    <a href="{{ route('admin.settings.api') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.api') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        API Settings
+                    </a>
+                    <a href="{{ route('admin.settings.tracking') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.tracking') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Tracking Config
+                    </a>
+                    <a href="{{ route('admin.settings.notifications') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.notifications') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Push Notifications
+                    </a>
+                    <a href="{{ route('admin.settings.checkout') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.checkout') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Checkout
+                    </a>
+                    <a href="{{ route('admin.delivery-methods.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.delivery-methods.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Delivery Methods
+                    </a>
+                    <a href="{{ route('admin.settings.marketing') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.marketing') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Marketing & Popups
+                    </a>
+                </div>
+            </div>
         </nav>
         <div class="p-4 border-t border-gray-200 dark:border-gray-700">
             <a href="/" class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -214,6 +278,73 @@
     <script>
         lucide.createIcons();
     </script>
+    
+    @php
+        $firebaseApiKey = \App\Models\Setting::get('firebase_api_key');
+    @endphp
+    @if($firebaseApiKey)
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "{{ \App\Models\Setting::get('firebase_api_key') }}",
+            authDomain: "{{ \App\Models\Setting::get('firebase_auth_domain') }}",
+            projectId: "{{ \App\Models\Setting::get('firebase_project_id') }}",
+            storageBucket: "{{ \App\Models\Setting::get('firebase_storage_bucket') }}",
+            messagingSenderId: "{{ \App\Models\Setting::get('firebase_messaging_sender_id') }}",
+            appId: "{{ \App\Models\Setting::get('firebase_app_id') }}"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        const messaging = firebase.messaging();
+
+        // Request permission
+        function requestFirebasePermission() {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');
+                    messaging.getToken({ vapidKey: "{{ \App\Models\Setting::get('firebase_vapid_key') }}" })
+                        .then((currentToken) => {
+                            if (currentToken) {
+                                saveTokenToServer(currentToken);
+                            }
+                        }).catch((err) => {
+                            console.log('An error occurred while retrieving token. ', err);
+                        });
+                }
+            });
+        }
+
+        function saveTokenToServer(token) {
+            fetch("{{ route('admin.settings.fcm_token') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ token: token })
+            });
+        }
+
+        // Run on load
+        requestFirebasePermission();
+
+        messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            if(Notification.permission === 'granted') {
+                new Notification(payload.notification.title, {
+                    body: payload.notification.body,
+                    icon: '/icon.png'
+                });
+            }
+        });
+    </script>
+    @endif
+    
     @stack('scripts')
 </body>
 </html>

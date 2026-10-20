@@ -145,6 +145,246 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Quantity Bundle Offers -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <input type="hidden" name="bundle_settings" :value="JSON.stringify(bundle_settings)">
+
+                    <!-- Card Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quantity Bundle Offers</h3>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">বান্ডেল অফার</span>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Offer volume discounts (e.g. Buy 2 get 10% off, Buy 3 get ৳300 off) directly above checkout.
+                            </p>
+                        </div>
+
+                        <!-- Toggle Switch with Active Badge -->
+                        <div class="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" x-model="bundle_settings.enabled" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded"
+                                  :class="bundle_settings.enabled ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+                                  x-text="bundle_settings.enabled ? 'Enabled' : 'Disabled'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Bundle Configuration Body -->
+                    <div x-show="bundle_settings.enabled" class="space-y-6 pt-5">
+                        <!-- Heading & Subtitle -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Bundle Section Heading</label>
+                                <input type="text" x-model="bundle_settings.heading" placeholder="e.g. Special Bundle Offers" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Bundle Subtitle / Promo Note (Optional)</label>
+                                <input type="text" x-model="bundle_settings.subtitle" placeholder="e.g. Buy more, save more!" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                            </div>
+                        </div>
+
+                        <!-- Feature Toggles -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div @click="bundle_settings.show_single = !bundle_settings.show_single"
+                                 class="p-3.5 rounded-xl border cursor-pointer transition flex items-start space-x-3 select-none"
+                                 :class="bundle_settings.show_single 
+                                     ? 'border-primary/40 bg-primary/[0.03] dark:bg-primary/10 shadow-sm' 
+                                     : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 opacity-70 hover:opacity-100'">
+                                <div class="mt-0.5 w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition"
+                                     :class="bundle_settings.show_single ? 'bg-primary border-primary text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'">
+                                    <i data-lucide="check" class="w-3 h-3" x-show="bundle_settings.show_single"></i>
+                                </div>
+                                <div>
+                                    <span class="block text-xs font-bold text-gray-900 dark:text-white">Show "Buy 1" Option</span>
+                                    <span class="block text-[11px] text-gray-500 mt-0.5">Show regular single item before bundle tiers</span>
+                                </div>
+                            </div>
+
+                            <div @click="bundle_settings.enable_variations = !bundle_settings.enable_variations"
+                                 class="p-3.5 rounded-xl border cursor-pointer transition flex items-start space-x-3 select-none"
+                                 :class="bundle_settings.enable_variations 
+                                     ? 'border-primary/40 bg-primary/[0.03] dark:bg-primary/10 shadow-sm' 
+                                     : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 opacity-70 hover:opacity-100'">
+                                <div class="mt-0.5 w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition"
+                                     :class="bundle_settings.enable_variations ? 'bg-primary border-primary text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'">
+                                    <i data-lucide="check" class="w-3 h-3" x-show="bundle_settings.enable_variations"></i>
+                                </div>
+                                <div>
+                                    <span class="block text-xs font-bold text-gray-900 dark:text-white">Customer Variation Choice</span>
+                                    <span class="block text-[11px] text-gray-500 mt-0.5">Allow separate color/size choice per quantity</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Single option config (when show_single is true) -->
+                        <div x-show="bundle_settings.show_single" 
+                             class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30">
+                            <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-200/80 dark:border-gray-700">
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-200/70 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                        <i data-lucide="package" class="w-3.5 h-3.5 text-gray-600 dark:text-gray-400"></i>
+                                        <span>Single Unit (Buy 1)</span>
+                                    </span>
+                                    <span class="text-xs text-gray-500">Regular Price (No discount)</span>
+                                </div>
+                                <button type="button" 
+                                        @click="bundle_settings.default_tier = 'single'"
+                                        class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition"
+                                        :class="bundle_settings.default_tier === 'single' 
+                                            ? 'border-primary bg-primary text-white shadow-sm' 
+                                            : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-300 bg-white dark:bg-gray-800'">
+                                    <i data-lucide="check" class="w-3.5 h-3.5" x-show="bundle_settings.default_tier === 'single'"></i>
+                                    <span x-text="bundle_settings.default_tier === 'single' ? 'Default Selected' : 'Set as Default'"></span>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Buy 1 Display Title</label>
+                                    <input type="text" x-model="bundle_settings.single_title" placeholder="Buy 1 (Regular Price)" class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Buy 1 Badge / Tag (Optional)</label>
+                                    <input type="text" x-model="bundle_settings.single_badge" placeholder="e.g. Standard" class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bundle Tiers List -->
+                        <div class="pt-2">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+                                        <span>Discount Tiers</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-extrabold bg-primary/10 text-primary" x-text="bundle_settings.tiers ? bundle_settings.tiers.length : 0"></span>
+                                    </h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Define multi-quantity bundle offers with percentage or fixed cash discounts.</p>
+                                </div>
+                                <button type="button" @click="addBundleTier()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-secondary transition shadow-sm">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>Add Offer Tier</span>
+                                </button>
+                            </div>
+
+                            <div class="space-y-4">
+                                <template x-for="(tier, tIndex) in bundle_settings.tiers" :key="tIndex">
+                                    <div class="p-4 sm:p-5 border rounded-xl relative transition shadow-sm"
+                                         :class="bundle_settings.default_tier === tIndex 
+                                             ? 'border-primary bg-primary/[0.02] dark:border-primary dark:bg-primary/10 ring-1 ring-primary' 
+                                             : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'">
+                                        
+                                        <!-- Top Bar: Tier Index, Live Discount Pill, Default Radio & Delete -->
+                                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-700/70">
+                                            <div class="flex items-center space-x-2 flex-wrap">
+                                                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                                                    <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                                                    <span x-text="`Tier #${tIndex + 1}: Buy ${tier.quantity || 2} Items`"></span>
+                                                </span>
+
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                                                      x-text="tier.discount_type === 'percentage' ? `${tier.discount_value || 0}% OFF` : `৳${tier.discount_value || 0} OFF`">
+                                                </span>
+
+                                                <template x-if="tier.badge">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 uppercase tracking-wider"
+                                                          x-text="tier.badge">
+                                                    </span>
+                                                </template>
+                                            </div>
+
+                                            <div class="flex items-center space-x-2">
+                                                <button type="button" 
+                                                        @click="bundle_settings.default_tier = tIndex"
+                                                        class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg border text-xs font-medium transition"
+                                                        :class="bundle_settings.default_tier === tIndex 
+                                                            ? 'border-primary bg-primary text-white shadow-sm' 
+                                                            : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-300 bg-gray-50 dark:bg-gray-700/50'">
+                                                    <i data-lucide="check" class="w-3.5 h-3.5" x-show="bundle_settings.default_tier === tIndex"></i>
+                                                    <span x-text="bundle_settings.default_tier === tIndex ? 'Default Selected' : 'Set as Default'"></span>
+                                                </button>
+
+                                                <button type="button" 
+                                                        @click="removeBundleTier(tIndex)" 
+                                                        title="Remove Tier"
+                                                        class="text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tier Inputs: Robust, non-overlapping Layout -->
+                                        <div class="space-y-3">
+                                            <!-- Row 1: Quantity (fixed 144px) & Offer Title (flex-1 all remaining width) -->
+                                            <div class="flex flex-col sm:flex-row gap-3">
+                                                <div class="w-full sm:w-36 flex-shrink-0">
+                                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        Quantity <span class="text-red-500">*</span>
+                                                    </label>
+                                                    <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-700 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+                                                        <input type="number" min="2" x-model.number="tier.quantity" placeholder="2" 
+                                                               class="w-full min-w-0 px-3 py-1.5 text-xs font-bold border-0 focus:ring-0 bg-transparent text-gray-900 dark:text-white text-center">
+                                                        <span class="inline-flex items-center px-2.5 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300 text-xs font-semibold border-l border-gray-200 dark:border-gray-500 select-none">pcs</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex-1 min-w-0">
+                                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        Offer Title / Display Name <span class="text-red-500">*</span>
+                                                    </label>
+                                                    <input type="text" x-model="tier.title" 
+                                                           placeholder="e.g. Buy 2 and Save 10%" 
+                                                           class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                                </div>
+                                            </div>
+
+                                            <!-- Row 2: 3-column grid for Discount Type, Discount Value, Badge -->
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Discount Type</label>
+                                                    <select x-model="tier.discount_type" 
+                                                            class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                                        <option value="percentage">% Percentage</option>
+                                                        <option value="fixed">৳ Fixed Amount</option>
+                                                    </select>
+                                                </div>
+
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Discount Value</label>
+                                                    <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-700 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+                                                        <span class="inline-flex items-center px-3 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-bold border-r border-gray-200 dark:border-gray-500 select-none"
+                                                              x-text="tier.discount_type === 'percentage' ? '%' : '৳'"></span>
+                                                        <input type="number" step="0.01" min="0" x-model.number="tier.discount_value" placeholder="10" 
+                                                               class="w-full min-w-0 px-3 py-1.5 text-xs font-bold border-0 focus:ring-0 bg-transparent text-gray-900 dark:text-white">
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Badge Text (Optional)</label>
+                                                    <input type="text" x-model="tier.badge" 
+                                                           placeholder="e.g. Most Popular" 
+                                                           class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <div x-show="!bundle_settings.tiers || bundle_settings.tiers.length === 0" 
+                                     class="text-center py-8 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-900/30">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 mx-auto flex items-center justify-center mb-2">
+                                        <i data-lucide="tag" class="w-5 h-5"></i>
+                                    </div>
+                                    <h5 class="text-xs font-bold text-gray-700 dark:text-gray-300">No Bundle Tiers Configured</h5>
+                                    <p class="text-[11px] text-gray-500 mt-1 max-w-sm mx-auto">Click "+ Add Offer Tier" above to create discount tiers like Buy 2, Buy 3, etc.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- Sidebar -->
             <div class="space-y-6">
@@ -337,6 +577,32 @@
                     'media_url' => $var->media ? $var->media->url : null
                 ];
             })) !!},
+            bundle_settings: {!! json_encode($product->bundle_settings ?? [
+                'enabled' => false,
+                'heading' => 'Special Bundle Offers',
+                'subtitle' => 'Buy more, save more!',
+                'show_single' => true,
+                'single_title' => 'Buy 1 (Regular Price)',
+                'single_badge' => 'Standard',
+                'enable_variations' => true,
+                'default_tier' => 'single',
+                'tiers' => [
+                    [
+                        'quantity' => 2,
+                        'title' => 'Buy 2 and Save 10%',
+                        'discount_type' => 'percentage',
+                        'discount_value' => 10,
+                        'badge' => 'Most Popular'
+                    ],
+                    [
+                        'quantity' => 3,
+                        'title' => 'Buy 3 and Save 20%',
+                        'discount_type' => 'percentage',
+                        'discount_value' => 20,
+                        'badge' => 'Best Value'
+                    ]
+                ]
+            ]) !!},
             currentMediaTarget: null,
             currentVariationIndex: null,
 
@@ -353,6 +619,10 @@
                         this.variations[this.currentVariationIndex].media_url = media.url;
                     }
                 });
+
+                setTimeout(() => {
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 100);
             },
 
             generateSlug() {
@@ -440,6 +710,31 @@
                 this.currentMediaTarget = target;
                 this.currentVariationIndex = index;
                 window.dispatchEvent(new CustomEvent('open-media-modal', { detail: { callbackEvent: 'media-selected' } }));
+            },
+
+            addBundleTier() {
+                if (!this.bundle_settings.tiers) {
+                    this.bundle_settings.tiers = [];
+                }
+                const maxQty = this.bundle_settings.tiers.length > 0 
+                    ? Math.max(...this.bundle_settings.tiers.map(t => parseInt(t.quantity) || 1)) 
+                    : 1;
+                const nextQty = maxQty + 1;
+                this.bundle_settings.tiers.push({
+                    quantity: nextQty,
+                    title: `Buy ${nextQty} and Save 15%`,
+                    discount_type: 'percentage',
+                    discount_value: 15,
+                    badge: 'Save More'
+                });
+                setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+            },
+
+            removeBundleTier(index) {
+                this.bundle_settings.tiers.splice(index, 1);
+                if (this.bundle_settings.default_tier === index) {
+                    this.bundle_settings.default_tier = 'single';
+                }
             }
         }));
     });

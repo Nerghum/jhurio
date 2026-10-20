@@ -9,6 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+
+    <!-- Analytics Tracker -->
+    <script src="{{ asset('js/tracker.js') }}"></script>
+    
     <style>
         [x-cloak] { display: none !important; }
         
@@ -31,6 +37,7 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
     </style>
+    @include('components.tracking-scripts')
 </head>
 <body class="bg-gray-50 dark:bg-darker text-gray-800 dark:text-gray-200 transition-colors duration-300" x-data="cartState()">
 
@@ -144,6 +151,8 @@
                         <div class="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
 
                         <div class="flex items-center gap-4">
+
+
                             @auth
                             {{-- Logged-in Customer Greeting --}}
                             <div class="relative" x-data="{ open: false }" @click.outside="open = false">
@@ -440,6 +449,8 @@
                 <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
                     <i data-lucide="user" class="w-5 h-5 text-gray-500"></i> My Account
                 </a>
+                
+
             </div>
             
             <div class="p-4 border-t border-gray-100 dark:border-gray-800 mb-[env(safe-area-inset-bottom)]">
@@ -451,6 +462,7 @@
     @include('components.side-cart')
     @include('components.checkout-modal')
     @include('components.quickview-modal')
+    @include('components.exit-intent-popup')
 
     <script>
         lucide.createIcons();
@@ -505,6 +517,16 @@
                         this.totalItems = data.totalItems;
                         this.totalPrice = data.totalPrice;
                         this.isOpen = true; // Open the side cart
+                        
+                        // Fire frontend AddToCart event
+                        if (typeof window.trackEvent === 'function') {
+                            window.trackEvent('AddToCart', {
+                                content_ids: [itemData.product_id],
+                                content_type: 'product',
+                                value: this.totalPrice, // Note: This fires with cart total; can adjust to item price if preferred
+                                currency: 'BDT'
+                            });
+                        }
                     } catch (error) {
                         console.error('Error adding to cart:', error);
                     }
@@ -531,7 +553,7 @@
                 },
                 
                 async updateQuantity(id, quantity) {
-                    if (quantity < 1) return this.removeItem(id);
+                    if (quantity < 1) return;
                     
                     try {
                         const response = await fetch('/cart/update', {
@@ -550,6 +572,19 @@
                     } catch (error) {
                         console.error('Error updating quantity:', error);
                     }
+                },
+                
+                checkoutCart() {
+                    if (this.items.length === 0) return;
+                    
+                    window.dispatchEvent(new CustomEvent('open-checkout', {
+                        detail: {
+                            is_cart: true,
+                            cart_items: this.items,
+                            cart_total: this.totalPrice
+                        }
+                    }));
+                    this.isOpen = false;
                 }
             }));
 
@@ -582,10 +617,52 @@
                         console.error('Search error:', error);
                     } finally {
                         this.isLoading = false;
+                        
+                        // Fire frontend Search event
+                        if (this.query.length > 2 && typeof window.trackEvent === 'function') {
+                            window.trackEvent('Search', {
+                                search_string: this.query
+                            });
+                        }
                     }
                 }
             }));
         });
+
+        window.toggleWishlist = async function(productId, btn) {
+            try {
+                const response = await fetch('/wishlist/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ product_id: productId })
+                });
+                const data = await response.json();
+                
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                
+                if (data.success) {
+                    if (data.action === 'added') {
+                        btn.querySelector('i').classList.add('fill-red-500', 'text-red-500');
+                        btn.querySelector('i').classList.remove('text-gray-400');
+                    } else {
+                        btn.querySelector('i').classList.remove('fill-red-500', 'text-red-500');
+                        btn.querySelector('i').classList.add('text-gray-400');
+                        // if we are on wishlist page, remove the item
+                        let item = document.getElementById('wishlist-item-' + productId);
+                        if (item) item.remove();
+                    }
+                    showNotification(data.message);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
     </script>
     @stack('scripts')
 </body>

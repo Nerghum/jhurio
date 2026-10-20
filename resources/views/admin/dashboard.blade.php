@@ -192,4 +192,53 @@
         </div>
     </div>
 </div>
+<!-- Low Stock Alerts -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-red-50/50 dark:bg-red-900/10">
+        <h3 class="text-lg font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i> Low Stock Alerts
+        </h3>
+        <a href="{{ route('admin.products.index') }}" class="text-sm font-medium text-red-600 hover:text-red-700 dark:hover:text-red-300 transition-colors">View Inventory</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium">
+                <tr>
+                    <th class="px-6 py-4">Product</th>
+                    <th class="px-6 py-4">Price</th>
+                    <th class="px-6 py-4 text-right">Stock</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                @forelse($lowStockProducts ?? [] as $product)
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td class="px-6 py-4 flex items-center gap-3">
+                        <div class="h-10 w-10 flex-shrink-0 rounded-lg bg-gray-100 dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700">
+                            <img src="{{ $product->thumbnail ? $product->thumbnail->url : 'https://via.placeholder.com/150' }}" alt="" class="h-full w-full object-cover">
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white truncate max-w-[200px]">{{ $product->name }}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-[200px]">{{ $product->categories->pluck('name')->implode(', ') ?: 'Uncategorized' }}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">
+                        {{ number_format($product->price, 0) }} BDT
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                            {{ $product->stock }} Left
+                        </span>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        All products have healthy stock levels.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
 @endsection

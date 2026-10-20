@@ -17,6 +17,11 @@ class Review extends Model
         'comment',
         'is_verified_purchase',
         'status',
+        'media',
+    ];
+
+    protected $casts = [
+        'media' => 'array',
     ];
 
     public function order()

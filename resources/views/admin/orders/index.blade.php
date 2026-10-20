@@ -28,11 +28,28 @@
     @endforeach
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden" x-data="orderBulkActions()">
     
     <!-- Filter Bar -->
-    <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center gap-4">
-        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex-1 max-w-md relative">
+    <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <select x-model="bulkAction" class="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary">
+                <option value="">Bulk Actions</option>
+                @foreach($statuses as $key => $status)
+                    <option value="{{ $key }}">Mark as {{ $status['label'] }}</option>
+                @endforeach
+            </select>
+            <button @click="applyBulkAction" 
+                    :disabled="!bulkAction || selected.length === 0" 
+                    class="bg-gray-900 text-white dark:bg-white dark:text-gray-900 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Apply
+            </button>
+            <span x-show="selected.length > 0" class="text-xs font-medium text-gray-500" x-cloak>
+                <span x-text="selected.length"></span> selected
+            </span>
+        </div>
+
+        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex-1 max-w-md relative w-full">
             @if(request('status'))
                 <input type="hidden" name="status" value="{{ request('status') }}">
             @endif
@@ -45,6 +62,9 @@
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-medium border-b border-gray-100 dark:border-gray-700">
                 <tr>
+                    <th class="px-6 py-4 w-10">
+                        <input type="checkbox" @click="toggleAll" :checked="allSelected" class="w-4 h-4 text-primary bg-white border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    </th>
                     <th class="px-6 py-4">Order ID</th>
                     <th class="px-6 py-4">Date</th>
                     <th class="px-6 py-4">Customer</th>
@@ -56,6 +76,9 @@
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 @forelse($orders as $order)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <input type="checkbox" value="{{ $order->id }}" x-model="selected" class="w-4 h-4 text-primary bg-white border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    </td>
                     <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">
                         #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                     </td>
@@ -100,4 +123,61 @@
     </div>
     @endif
 </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('orderBulkActions', () => ({
+        selected: [],
+        bulkAction: '',
+        orderIds: @json($orders->pluck('id')),
+
+        get allSelected() {
+            return this.selected.length > 0 && this.selected.length === this.orderIds.length;
+        },
+
+        toggleAll() {
+            if (this.allSelected) {
+                this.selected = [];
+            } else {
+                this.selected = this.orderIds.map(String);
+            }
+        },
+
+        async applyBulkAction() {
+            if (this.selected.length === 0 || !this.bulkAction) return;
+            
+            if (!confirm(`Are you sure you want to mark ${this.selected.length} orders as ${this.bulkAction}?`)) return;
+
+            try {
+                const response = await fetch('{{ route('admin.orders.bulk_action') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_ids: this.selected,
+                        action: this.bulkAction
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('An error occurred while updating orders.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred while updating orders.');
+            }
+        }
+    }));
+});
+</script>
+@endpush

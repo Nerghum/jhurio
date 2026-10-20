@@ -17,6 +17,20 @@
             </div>
 
             <div class="absolute top-2 right-2 flex flex-col gap-2">
+                <!-- Wishlist -->
+                @php
+                    $inWishlist = false;
+                    if (auth()->check()) {
+                        $inWishlist = \App\Models\Wishlist::where('user_id', auth()->id())->where('product_id', $product->id)->exists();
+                    }
+                @endphp
+                <button type="button" 
+                        onclick="toggleWishlist({{ $product->id }}, this)"
+                        class="bg-white/90 backdrop-blur-sm dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 hover:text-red-500 rounded-full p-2 shadow-sm hover:shadow-md transition-all"
+                        title="Wishlist">
+                    <i data-lucide="heart" class="w-4 h-4 {{ $inWishlist ? 'fill-red-500 text-red-500' : 'text-gray-400' }}"></i>
+                </button>
+
                 <!-- Quickview (Always visible subtle button) -->
                 <button type="button" 
                         @click="window.dispatchEvent(new CustomEvent('open-quickview', { detail: { slug: '{{ $product->slug }}' } }))"

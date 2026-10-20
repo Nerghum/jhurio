@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,6 +14,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('categories')->latest()->paginate(10);
+
         return view('admin.products.index', compact('products'));
     }
 
@@ -21,6 +22,7 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $tags = Tag::all();
+
         return view('admin.products.create', compact('categories', 'tags'));
     }
 
@@ -41,11 +43,19 @@ class ProductController extends Controller
             'video_url' => 'nullable|url',
             'tags_json' => 'nullable|string',
             'options' => 'nullable|json',
+            'bundle_settings' => 'nullable|string',
         ]);
 
         $productData = $request->except(['categories', 'tags_json']);
         if ($request->has('options')) {
             $productData['options'] = json_decode($request->options, true);
+        }
+        if ($request->filled('bundle_settings')) {
+            $productData['bundle_settings'] = is_array($request->bundle_settings)
+                ? $request->bundle_settings
+                : json_decode($request->bundle_settings, true);
+        } else {
+            $productData['bundle_settings'] = null;
         }
 
         $product = Product::create($productData);
@@ -59,7 +69,7 @@ class ProductController extends Controller
         if ($request->has('gallery')) {
             $galleryData = [];
             foreach (explode(',', $request->gallery) as $index => $mediaId) {
-                if(trim($mediaId) !== "") {
+                if (trim($mediaId) !== '') {
                     $galleryData[$mediaId] = ['sort_order' => $index];
                 }
             }
@@ -90,6 +100,7 @@ class ProductController extends Controller
         $categories = Category::all();
         $tags = Tag::all();
         $product->load('gallery', 'variations', 'thumbnail', 'tags', 'categories');
+
         return view('admin.products.edit', compact('product', 'categories', 'tags'));
     }
 
@@ -97,7 +108,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:products,slug,' . $product->id,
+            'slug' => 'required|string|unique:products,slug,'.$product->id,
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
             'description' => 'nullable|string',
@@ -110,11 +121,19 @@ class ProductController extends Controller
             'video_url' => 'nullable|url',
             'tags_json' => 'nullable|string',
             'options' => 'nullable|json',
+            'bundle_settings' => 'nullable|string',
         ]);
 
         $productData = $request->except(['categories', 'tags_json']);
         if ($request->has('options')) {
             $productData['options'] = json_decode($request->options, true);
+        }
+        if ($request->filled('bundle_settings')) {
+            $productData['bundle_settings'] = is_array($request->bundle_settings)
+                ? $request->bundle_settings
+                : json_decode($request->bundle_settings, true);
+        } else {
+            $productData['bundle_settings'] = null;
         }
 
         $product->update($productData);
@@ -129,7 +148,7 @@ class ProductController extends Controller
         if ($request->has('gallery')) {
             $galleryData = [];
             foreach (explode(',', $request->gallery) as $index => $mediaId) {
-                if(trim($mediaId) !== "") {
+                if (trim($mediaId) !== '') {
                     $galleryData[$mediaId] = ['sort_order' => $index];
                 }
             }
@@ -154,6 +173,7 @@ class ProductController extends Controller
                 }
             }
         }
+
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
 
@@ -161,19 +181,21 @@ class ProductController extends Controller
     {
         if (empty($tagsJson)) {
             $product->tags()->detach();
+
             return;
         }
 
         $tagNames = json_decode($tagsJson, true);
-        if (!is_array($tagNames)) {
+        if (! is_array($tagNames)) {
             $product->tags()->detach();
+
             return;
         }
 
         $tagIds = [];
         foreach ($tagNames as $tagName) {
             $tagName = trim($tagName);
-            if (!empty($tagName)) {
+            if (! empty($tagName)) {
                 $tag = Tag::firstOrCreate(
                     ['name' => $tagName],
                     ['slug' => Str::slug($tagName)]
@@ -188,6 +210,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
+
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
 }

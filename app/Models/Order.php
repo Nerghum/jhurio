@@ -12,8 +12,17 @@ class Order extends Model
         'phone',
         'shipping_address',
         'total_amount',
+        'discount_amount',
+        'coupon_code',
         'status',
+        'delivery_method_id',
+        'delivery_cost',
     ];
+
+    public function deliveryMethod()
+    {
+        return $this->belongsTo(DeliveryMethod::class);
+    }
 
     public function user()
     {

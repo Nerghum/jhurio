@@ -9,11 +9,12 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'price', 'compare_at_price', 'image_url', 'content', 'status', 'stock_quantity', 'thumbnail_media_id', 'video_url', 'options', 'is_featured'];
+    protected $fillable = ['name', 'slug', 'description', 'price', 'compare_at_price', 'image_url', 'content', 'status', 'stock_quantity', 'thumbnail_media_id', 'video_url', 'options', 'is_featured', 'bundle_settings'];
 
     protected $casts = [
         'options' => 'array',
         'is_featured' => 'boolean',
+        'bundle_settings' => 'array',
     ];
 
     public function categories()
@@ -54,5 +55,10 @@ class Product extends Model
     public function reviewsCount()
     {
         return $this->reviews()->where('status', 'approved')->count();
+    }
+
+    public function bundles()
+    {
+        return $this->belongsToMany(ProductBundle::class, 'bundle_product')->where('is_active', true);
     }
 }

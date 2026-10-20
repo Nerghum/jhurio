@@ -38,7 +38,7 @@
         <div class="col-span-12 md:col-span-12 lg:col-span-6 rounded-xl overflow-hidden shadow-sm relative h-[300px] lg:h-[420px] group bg-gray-100 dark:bg-gray-800">
             @if(!empty($slider['image']))
                 <a href="{{ $slider['link'] ?? '#' }}" class="block w-full h-full">
-                    <img src="{{ $slider['image'] }}" class="w-full h-full object-cover" alt="Hero Banner">
+                    <img src="{{ $slider['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hero Banner">
                 </a>
             @else
                 <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
@@ -49,38 +49,36 @@
         </div>
 
         <!-- Parts 3 & 4: Right Side Static Banners -->
+        @if(!empty($rightTop['image']) || !empty($rightBottom['image']))
         <div class="hidden md:flex lg:flex md:col-span-12 lg:col-span-3 flex-row lg:flex-col gap-4 h-[200px] lg:h-[420px]">
+            @if(!empty($rightTop['image']))
             <!-- Top Banner -->
             <div class="flex-1 rounded-xl overflow-hidden shadow-sm relative group bg-gray-100 dark:bg-gray-800">
-                @if(!empty($rightTop['image']))
-                    <a href="{{ $rightTop['link'] ?? '#' }}" class="block w-full h-full relative">
-                        <img src="{{ $rightTop['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Right Top Banner">
-                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                    </a>
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">Right Top Image</div>
-                @endif
+                <a href="{{ $rightTop['link'] ?? '#' }}" class="block w-full h-full relative">
+                    <img src="{{ $rightTop['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Right Top Banner">
+                    <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                </a>
             </div>
+            @endif
             
+            @if(!empty($rightBottom['image']))
             <!-- Bottom Banner -->
             <div class="flex-1 rounded-xl overflow-hidden shadow-sm relative group bg-gray-100 dark:bg-gray-800">
-                @if(!empty($rightBottom['image']))
-                    <a href="{{ $rightBottom['link'] ?? '#' }}" class="block w-full h-full relative">
-                        <img src="{{ $rightBottom['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Right Bottom Banner">
-                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                    </a>
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">Right Bottom Image</div>
-                @endif
+                <a href="{{ $rightBottom['link'] ?? '#' }}" class="block w-full h-full relative">
+                    <img src="{{ $rightBottom['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Right Bottom Banner">
+                    <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                </a>
             </div>
+            @endif
         </div>
+        @endif
     </div>
     
     <!-- Part 5: Bottom Strip (Optional) -->
     @if(!empty($bottomStrip['image']))
         <div class="mt-4 rounded-xl overflow-hidden shadow-sm h-[100px] md:h-[120px] relative group">
             <a href="{{ $bottomStrip['link'] ?? '#' }}" class="block w-full h-full">
-                <img src="{{ $bottomStrip['image'] }}" class="w-full h-full object-cover" alt="Bottom Strip Banner">
+                <img src="{{ $bottomStrip['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" alt="Bottom Strip Banner">
             </a>
         </div>
     @endif

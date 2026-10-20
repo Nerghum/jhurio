@@ -11,6 +11,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::withCount('products')->latest()->paginate(10);
+
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -26,6 +27,8 @@ class CategoryController extends Controller
             'slug' => 'required|string|unique:categories,slug',
             'description' => 'nullable|string',
             'media_id' => 'nullable|exists:media,id',
+            'fb_pixel_id' => 'nullable|string|max:255',
+            'fb_capi_token' => 'nullable|string',
         ]);
 
         Category::create($data);
@@ -36,6 +39,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         $category->load('media');
+
         return view('admin.categories.edit', compact('category'));
     }
 
@@ -43,9 +47,11 @@ class CategoryController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:categories,slug,' . $category->id,
+            'slug' => 'required|string|unique:categories,slug,'.$category->id,
             'description' => 'nullable|string',
             'media_id' => 'nullable|exists:media,id',
+            'fb_pixel_id' => 'nullable|string|max:255',
+            'fb_capi_token' => 'nullable|string',
         ]);
 
         $category->update($data);
@@ -56,6 +62,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
+
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }
 }

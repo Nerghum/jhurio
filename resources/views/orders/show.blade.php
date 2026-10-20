@@ -66,3 +66,19 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Fire frontend Purchase event
+    if (typeof window.trackEvent === 'function') {
+        window.trackEvent('Purchase', {
+            content_ids: {!! json_encode($order->items->pluck('product_id')->toArray()) !!},
+            content_type: 'product',
+            value: {{ $order->total_amount }},
+            currency: 'BDT',
+            num_items: {{ $order->items->sum('quantity') }},
+            transaction_id: '{{ $order->id }}'
+        });
+    }
+</script>
+@endpush

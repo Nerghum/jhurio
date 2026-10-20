@@ -197,31 +197,75 @@
                         <h4 class="text-base font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-sm border-b border-gray-200 dark:border-gray-700 pb-2">Order Summary</h4>
                         
                         <!-- Product Item -->
-                        <div class="flex items-start gap-4 mb-6 group">
-                            <template x-if="productImage">
-                                <div class="w-16 h-16 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 bg-white">
-                                    <img :src="productImage" class="w-full h-full object-cover" :alt="productName">
-                                </div>
-                            </template>
-                            <div class="flex-1">
-                                <h5 class="text-sm font-bold text-gray-900 dark:text-white leading-snug" x-text="productName"></h5>
-                                <template x-if="variationId">
-                                    <p class="text-xs text-gray-500 mt-1">Variation selected</p>
+                        <template x-if="!isCart">
+                            <div class="flex items-start gap-4 mb-6 group">
+                                <template x-if="productImage">
+                                    <div class="w-16 h-16 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 bg-white">
+                                        <img :src="productImage" class="w-full h-full object-cover" :alt="productName">
+                                    </div>
                                 </template>
-                                
-                                <div class="flex items-center mt-3 border border-gray-200 dark:border-gray-600 rounded-md inline-flex bg-white dark:bg-gray-700 shadow-sm">
-                                    <button type="button" @click="decrementQuantity()" class="px-2 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors rounded-l-md font-medium"> - </button>
-                                    <input type="number" x-model.number="quantity" class="w-10 text-center text-sm font-medium border-0 focus:ring-0 p-0 dark:bg-gray-700 dark:text-white" min="1" readonly>
-                                    <button type="button" @click="incrementQuantity()" class="px-2 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors rounded-r-md font-medium"> + </button>
+                                <div class="flex-1">
+                                    <h5 class="text-sm font-bold text-gray-900 dark:text-white leading-snug" x-text="productName"></h5>
+                                    
+                                    <template x-if="bundleInfo && bundleInfo.is_bundle">
+                                        <div class="mt-1">
+                                            <span class="inline-block px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-full bg-primary/10 text-primary border border-primary/20" x-text="bundleInfo.bundle_name"></span>
+                                            <template x-if="bundleInfo.items && bundleInfo.items.length > 0">
+                                                <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                                                    <template x-for="item in bundleInfo.items" :key="item.item_number">
+                                                        <div x-show="item.variation_name" x-text="`Item #${item.item_number}: ${item.variation_name}`"></div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="!bundleInfo && variationId">
+                                        <p class="text-xs text-gray-500 mt-1">Variation selected</p>
+                                    </template>
+                                    
+                                    <template x-if="!bundleInfo || !bundleInfo.is_bundle">
+                                        <div class="flex items-center mt-3 border border-gray-200 dark:border-gray-600 rounded-md inline-flex bg-white dark:bg-gray-700 shadow-sm">
+                                            <button type="button" @click="decrementQuantity()" class="px-2 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors rounded-l-md font-medium"> - </button>
+                                            <input type="number" x-model.number="quantity" class="w-10 text-center text-sm font-medium border-0 focus:ring-0 p-0 dark:bg-gray-700 dark:text-white" min="1" readonly>
+                                            <button type="button" @click="incrementQuantity()" class="px-2 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors rounded-r-md font-medium"> + </button>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="bundleInfo && bundleInfo.is_bundle">
+                                        <div class="mt-2.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/60 px-2 py-1 rounded inline-block">
+                                            Qty: <span x-text="quantity" class="font-bold"></span> pcs (Bundle Offer)
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="ml-4 text-right flex flex-col items-end">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white"><span x-text="Number(price * quantity).toFixed(0)"></span> Tk</span>
                                 </div>
                             </div>
-                            <div class="ml-4 text-right flex flex-col items-end">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white"><span x-text="Number(price * quantity).toFixed(0)"></span> Tk</span>
-                                <button type="button" class="mt-2 text-red-500 hover:text-red-700 transition-colors opacity-0 group-hover:opacity-100">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
+                        </template>
+
+                        <!-- Cart Items -->
+                        <template x-if="isCart">
+                            <div class="mb-6 space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                <template x-for="item in cartItems" :key="item.id">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-12 h-12 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 bg-white">
+                                            <img :src="item.image || 'https://via.placeholder.com/150'" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="flex-1">
+                                            <h5 class="text-xs font-bold text-gray-900 dark:text-white leading-snug" x-text="item.name"></h5>
+                                            <template x-if="item.variation_name">
+                                                <p class="text-[10px] text-gray-500 mt-0.5" x-text="item.variation_name"></p>
+                                            </template>
+                                            <p class="text-xs text-gray-500 mt-1">Qty: <span x-text="item.quantity"></span></p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-xs font-bold text-gray-900 dark:text-white"><span x-text="Number(item.price * item.quantity).toFixed(0)"></span> Tk</span>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-                        </div>
+                        </template>
 
                         <hr class="border-gray-200 dark:border-gray-700 mb-4">
 
@@ -240,11 +284,43 @@
                             </template>
                         </div>
 
+                        @php
+                            $orderBumpProductId = \App\Models\Setting::get('order_bump_product_id');
+                            $orderBumpProduct = $orderBumpProductId ? \App\Models\Product::find($orderBumpProductId) : null;
+                        @endphp
+
+                        @if($orderBumpProduct)
+                        <!-- Order Bump -->
+                        <div class="mb-4 bg-primary/5 border border-primary/20 border-dashed rounded-xl p-4">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <div class="pt-1">
+                                    <input type="checkbox" x-model="acceptOrderBump" class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary">
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i> 
+                                        {{ \App\Models\Setting::get('order_bump_title', 'Yes, add this to my order!') }}
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        {{ \App\Models\Setting::get('order_bump_description', 'Special offer.') }}
+                                    </p>
+                                    <div class="mt-2 flex items-center gap-2">
+                                        @if($orderBumpProduct->thumbnail)
+                                        <img src="{{ $orderBumpProduct->thumbnail->url }}" class="w-8 h-8 rounded object-cover">
+                                        @endif
+                                        <span class="text-xs font-medium text-gray-900 dark:text-gray-300">{{ $orderBumpProduct->name }}</span>
+                                        <span class="text-sm font-bold text-primary ml-auto">+{{ number_format($orderBumpProduct->price, 0) }} Tk</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        @endif
+
                         <!-- Totals -->
                         <div class="space-y-2 mt-auto">
                             <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                                 <span>Subtotal</span>
-                                <span><span x-text="Number(price * quantity).toFixed(0)"></span> Tk</span>
+                                <span><span x-text="isCart ? Number(cartTotal).toFixed(0) : Number(price * quantity).toFixed(0)"></span> Tk</span>
                             </div>
                             
                             <template x-if="couponApplied">
@@ -254,14 +330,47 @@
                                 </div>
                             </template>
 
-                            <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-col gap-2 mb-3">
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Delivery Method <span class="text-red-500">*</span></label>
+                                <template x-if="deliveryMethodsLoading">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <i data-lucide="loader" class="w-4 h-4 animate-spin mr-2"></i> Loading delivery methods...
+                                    </div>
+                                </template>
+                                <template x-if="!deliveryMethodsLoading && deliveryMethods.length > 0">
+                                    <div class="space-y-2">
+                                        <template x-for="method in deliveryMethods" :key="method.id">
+                                            <label class="flex items-center p-3 border rounded-lg cursor-pointer transition-colors"
+                                                   :class="selectedDeliveryMethodId === method.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary/50'">
+                                                <input type="radio" x-model="selectedDeliveryMethodId" :value="method.id" name="delivery_method" class="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary">
+                                                <div class="ml-3 flex-1 flex justify-between">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="method.name"></span>
+                                                    <span class="text-sm font-bold text-gray-900 dark:text-white"><span x-text="Number(method.cost).toFixed(0)"></span> Tk</span>
+                                                </div>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="!deliveryMethodsLoading && deliveryMethods.length === 0">
+                                    <div class="text-sm text-red-500">No delivery methods available.</div>
+                                </template>
+                            </div>
+
+                            <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
                                 <span>Delivery</span>
-                                <span>Calculated at next step</span>
+                                <span>
+                                    <template x-if="selectedDeliveryCost !== null">
+                                        <span><span x-text="Number(selectedDeliveryCost).toFixed(0)"></span> Tk</span>
+                                    </template>
+                                    <template x-if="selectedDeliveryCost === null">
+                                        <span>Calculated at next step</span>
+                                    </template>
+                                </span>
                             </div>
 
                             <div class="flex justify-between text-lg font-extrabold text-gray-900 dark:text-white pt-3 border-t border-gray-200 dark:border-gray-700 mt-3">
                                 <span>Total</span>
-                                <span><span x-text="Number((price * quantity) - discountAmount).toFixed(0)"></span> Tk</span>
+                                <span><span x-text="Number((isCart ? cartTotal : (price * quantity)) - discountAmount + (selectedDeliveryCost || 0) + (acceptOrderBump ? Number(orderBumpPrice) : 0)).toFixed(0)"></span> Tk</span>
                             </div>
                         </div>
                     </div>
@@ -293,6 +402,17 @@
             price: 0,
             quantity: 1,
             productImage: '',
+            bundleInfo: null,
+            
+            // Cart data
+            isCart: false,
+            cartItems: [],
+            cartTotal: 0,
+            
+            // Order bump data
+            orderBumpProductId: @json($orderBumpProduct ? $orderBumpProduct->id : null),
+            orderBumpPrice: @json($orderBumpProduct ? $orderBumpProduct->price : 0),
+            acceptOrderBump: false,
             
             // User data
             isLoggedIn: @json(auth()->check()),
@@ -311,15 +431,34 @@
             couponMessage: '',
             couponLoading: false,
             discountAmount: 0,
+            
+            // Delivery data
+            deliveryMethods: [],
+            selectedDeliveryMethodId: null,
+            deliveryMethodsLoading: false,
+            
+            get selectedDeliveryCost() {
+                if (!this.selectedDeliveryMethodId) return null;
+                const method = this.deliveryMethods.find(m => m.id === this.selectedDeliveryMethodId);
+                return method ? parseFloat(method.cost) : 0;
+            },
 
             init() {
                 window.addEventListener('open-checkout', (e) => {
-                    this.productId = e.detail.product_id;
-                    this.variationId = e.detail.variation_id || null;
-                    this.productName = e.detail.product_name;
-                    this.price = e.detail.price;
-                    this.quantity = e.detail.quantity || 1;
-                    this.productImage = e.detail.product_image || '';
+                    this.isCart = e.detail.is_cart || false;
+                    
+                    if (this.isCart) {
+                        this.cartItems = e.detail.cart_items;
+                        this.cartTotal = e.detail.cart_total;
+                    } else {
+                        this.productId = e.detail.product_id;
+                        this.variationId = e.detail.variation_id || null;
+                        this.productName = e.detail.product_name;
+                        this.price = e.detail.price;
+                        this.quantity = e.detail.quantity || 1;
+                        this.productImage = e.detail.product_image || '';
+                        this.bundleInfo = e.detail.bundle_info || null;
+                    }
                     
                     this.resetForm();
                     
@@ -327,15 +466,67 @@
                         this.fetchAddresses();
                     }
                     
+                    this.fetchDeliveryMethods();
+                    
                     this.isOpen = true;
                     setTimeout(() => {
                         lucide.createIcons();
                     }, 50);
+                    
+                    // Fire frontend InitiateCheckout event
+                    if (typeof window.trackEvent === 'function') {
+                        window.trackEvent('InitiateCheckout', {
+                            content_ids: [this.productId],
+                            content_type: 'product',
+                            value: this.price * this.quantity,
+                            currency: 'BDT',
+                            num_items: this.quantity
+                        });
+                    }
                 });
 
                 this.$watch('quantity', () => {
                     if (this.couponApplied) this.applyCoupon();
                 });
+
+                let phoneTimeout;
+                this.$watch('phone', (val) => {
+                    clearTimeout(phoneTimeout);
+                    if (val && val.length >= 10) {
+                        phoneTimeout = setTimeout(() => {
+                            this.saveAbandonedCart();
+                        }, 1000);
+                    }
+                });
+            },
+            
+            async saveAbandonedCart() {
+                try {
+                    await fetch('/checkout/abandoned-cart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            phone: this.phone,
+                            name: this.name,
+                            address: this.address,
+                            district: this.district,
+                            cart_data: this.isCart ? this.cartItems : {
+                                product_id: this.productId,
+                                variation_id: this.variationId,
+                                product_name: this.productName,
+                                price: this.price,
+                                quantity: this.quantity,
+                                image: this.productImage
+                            }
+                        })
+                    });
+                } catch(e) {
+                    console.error('Failed to save abandoned cart', e);
+                }
             },
             
             async fetchAddresses() {
@@ -350,6 +541,21 @@
                 } catch(e) {
                     console.error('Failed to fetch addresses', e);
                 }
+            },
+            
+            async fetchDeliveryMethods() {
+                this.deliveryMethodsLoading = true;
+                try {
+                    const res = await fetch('/checkout/delivery-methods');
+                    const methods = await res.json();
+                    this.deliveryMethods = methods;
+                    if (methods.length > 0 && !this.selectedDeliveryMethodId) {
+                        this.selectedDeliveryMethodId = methods[0].id;
+                    }
+                } catch(e) {
+                    console.error('Failed to fetch delivery methods', e);
+                }
+                this.deliveryMethodsLoading = false;
             },
 
             selectAddress(addr) {
@@ -371,8 +577,8 @@
                 setTimeout(() => lucide.createIcons(), 50);
             },
 
-            incrementQuantity() { this.quantity++; },
-            decrementQuantity() { if (this.quantity > 1) this.quantity--; },
+            incrementQuantity() { if(!this.isCart) this.quantity++; },
+            decrementQuantity() { if (!this.isCart && this.quantity > 1) this.quantity--; },
 
             resetForm() {
                 this.name = @json(auth()->user()->name ?? '') || localStorage.getItem('checkout_name') || '';
@@ -385,6 +591,10 @@
                 this.couponApplied = false;
                 this.couponMessage = '';
                 this.discountAmount = 0;
+                // Don't reset delivery methods, but we can keep the selected one or default
+                if (this.deliveryMethods.length > 0) {
+                    this.selectedDeliveryMethodId = this.deliveryMethods[0].id;
+                }
             },
 
             close() { this.isOpen = false; },
@@ -405,7 +615,7 @@
                         },
                         body: JSON.stringify({
                             code: this.couponCode,
-                            order_total: this.price * this.quantity
+                            order_total: this.isCart ? this.cartTotal : (this.price * this.quantity)
                         })
                     });
                     
@@ -432,27 +642,42 @@
                     alert('Please fill in all required fields');
                     return;
                 }
+                if (!this.selectedDeliveryMethodId) {
+                    alert('Please select a delivery method');
+                    return;
+                }
                 
                 this.loading = true;
                 
+                const endpoint = this.isCart ? '/checkout/cart' : '/checkout/express';
+                const bodyData = {
+                    name: this.name,
+                    phone: this.phone,
+                    address: this.address,
+                    district: this.district,
+                    coupon_code: this.couponApplied ? this.couponCode : null,
+                    delivery_method_id: this.selectedDeliveryMethodId,
+                    order_bump_product_id: this.acceptOrderBump ? this.orderBumpProductId : null
+                };
+                
+                if (!this.isCart) {
+                    bodyData.product_id = this.productId;
+                    bodyData.variation_id = this.variationId;
+                    bodyData.quantity = this.quantity;
+                    if (this.bundleInfo) {
+                        bodyData.bundle_info = this.bundleInfo;
+                    }
+                }
+                
                 try {
-                    const response = await fetch('/checkout/express', {
+                    const response = await fetch(endpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                             'X-Requested-With': 'XMLHttpRequest'
                         },
-                        body: JSON.stringify({
-                            name: this.name,
-                            phone: this.phone,
-                            address: this.address,
-                            district: this.district,
-                            product_id: this.productId,
-                            variation_id: this.variationId,
-                            quantity: this.quantity,
-                            coupon_code: this.couponApplied ? this.couponCode : null
-                        })
+                        body: JSON.stringify(bodyData)
                     });
                     
                     const data = await response.json();

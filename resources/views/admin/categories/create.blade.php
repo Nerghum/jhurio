@@ -41,6 +41,21 @@
             </div>
 
             <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Tracking & Pixels (Optional)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="fb_pixel_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Facebook Pixel ID</label>
+                        <input type="text" name="fb_pixel_id" id="fb_pixel_id" placeholder="1234567890" class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                    </div>
+                    <div>
+                        <label for="fb_capi_token" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Facebook CAPI Token</label>
+                        <input type="text" name="fb_capi_token" id="fb_capi_token" placeholder="EAA..." class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Setting a Pixel ID here will track events specific to this category and its products, in addition to the global pixel.</p>
+            </div>
+
+            <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-secondary transition-colors">
                     Save Category
                 </button>

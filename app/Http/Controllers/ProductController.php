@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Services\FacebookCAPIService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -13,15 +15,15 @@ class ProductController extends Controller
 
         // Search filter
         if ($request->filled('q')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->q . '%')
-                  ->orWhere('description', 'like', '%' . $request->q . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->q.'%')
+                    ->orWhere('description', 'like', '%'.$request->q.'%');
             });
         }
 
         // Category filter
         if ($request->filled('category')) {
-            $query->whereHas('categories', function($q) use ($request) {
+            $query->whereHas('categories', function ($q) use ($request) {
                 $q->where('slug', $request->category);
             });
         }
@@ -45,7 +47,38 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(12)->withQueryString();
-        $categories = \App\Models\Category::all();
+        $categories = Category::all();
+
+        $categoryPixels = [];
+        if ($request->filled('category')) {
+            $cat = Category::where('slug', $request->category)->first();
+            if ($cat && $cat->fb_pixel_id) {
+                $categoryPixels[] = [
+                    'pixel_id' => $cat->fb_pixel_id,
+                    'capi_token' => $cat->fb_capi_token,
+                ];
+            }
+        }
+        view()->share('categoryPixels', $categoryPixels);
+
+        if ($request->filled('q')) {
+            FacebookCAPIService::sendEvent('Search', [
+                'search_string' => $request->q,
+            ], [], null, $categoryPixels);
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $view = view('products.partials.grid', compact('products'))->render();
+            $pagination = $products->hasPages() ? $products->links()->render() : '';
+
+            return response()->json([
+                'html' => $view,
+                'pagination' => $pagination,
+                'total' => $products->total(),
+                'firstItem' => $products->firstItem() ?? 0,
+                'lastItem' => $products->lastItem() ?? 0,
+            ]);
+        }
 
         return view('products.index', compact('products', 'categories'));
     }
@@ -54,16 +87,24 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)
             ->where('status', 'published')
-            ->with(['categories', 'thumbnail', 'gallery', 'variations.media', 'tags', 'reviews' => function($q) {
+            ->with(['categories', 'thumbnail', 'gallery', 'variations.media', 'tags', 'reviews' => function ($q) {
                 $q->where('status', 'approved')->with('user')->latest();
             }])
             ->firstOrFail();
 
+        // Store in recently viewed
+        $recent = session()->get('recently_viewed', []);
+        if (! in_array($product->id, $recent)) {
+            array_unshift($recent, $product->id);
+            $recent = array_slice($recent, 0, 10);
+            session()->put('recently_viewed', $recent);
+        }
+
         // Fetch related products from the same categories
         $categoryIds = $product->categories->pluck('id')->toArray();
-        $relatedProducts = Product::whereHas('categories', function($q) use ($categoryIds) {
-                $q->whereIn('categories.id', $categoryIds);
-            })
+        $relatedProducts = Product::whereHas('categories', function ($q) use ($categoryIds) {
+            $q->whereIn('categories.id', $categoryIds);
+        })
             ->where('id', '!=', $product->id)
             ->where('status', 'published')
             ->with('thumbnail', 'categories')
@@ -82,7 +123,41 @@ class ProductController extends Controller
             $relatedProducts = $relatedProducts->merge($moreProducts);
         }
 
-        return view('products.show', compact('product', 'relatedProducts'));
+        $categoryPixels = [];
+        foreach ($product->categories as $category) {
+            if ($category->fb_pixel_id) {
+                $categoryPixels[] = [
+                    'pixel_id' => $category->fb_pixel_id,
+                    'capi_token' => $category->fb_capi_token,
+                ];
+            }
+        }
+        view()->share('categoryPixels', $categoryPixels);
+
+        FacebookCAPIService::sendEvent('ViewContent', [
+            'content_name' => $product->name,
+            'content_ids' => [$product->id],
+            'content_type' => 'product',
+            'value' => $product->price,
+            'currency' => 'BDT',
+        ], [], null, $categoryPixels);
+
+        // Fetch recently viewed products
+        $recentlyViewed = collect();
+        if (! empty($recent)) {
+            $recentlyViewed = Product::whereIn('id', $recent)
+                ->where('id', '!=', $product->id)
+                ->where('status', 'published')
+                ->with(['thumbnail', 'categories'])
+                ->take(4)
+                ->get()
+                ->sortBy(function ($model) use ($recent) {
+                    return array_search($model->id, $recent);
+                })
+                ->values();
+        }
+
+        return view('products.show', compact('product', 'relatedProducts', 'recentlyViewed'));
     }
 
     public function quickview($slug)
@@ -98,26 +173,26 @@ class ProductController extends Controller
     public function ajaxSearch(Request $request)
     {
         $query = strtolower(trim($request->get('q')));
-        
+
         $results = collect();
         $didYouMean = null;
 
-        if (!empty($query)) {
+        if (! empty($query)) {
             // Split the query into words to allow partial matches (e.g., "man's cotton" matching "Men's Cotton")
-            $words = array_filter(explode(' ', $query), function($word) {
+            $words = array_filter(explode(' ', $query), function ($word) {
                 return strlen($word) > 2; // Only search words longer than 2 characters
             });
-            
+
             // If all words are short, just search the original string
             if (empty($words)) {
                 $words = [$query];
             }
 
             $products = Product::where('status', 'published')
-                ->where(function($q) use ($words) {
+                ->where(function ($q) use ($words) {
                     foreach ($words as $word) {
-                        $q->orWhere('name', 'like', '%' . $word . '%')
-                          ->orWhere('description', 'like', '%' . $word . '%');
+                        $q->orWhere('name', 'like', '%'.$word.'%')
+                            ->orWhere('description', 'like', '%'.$word.'%');
                     }
                 })
                 ->select('id', 'name', 'slug', 'price', 'compare_at_price', 'thumbnail_media_id')
@@ -125,7 +200,7 @@ class ProductController extends Controller
                 ->take(4)
                 ->get();
 
-            $results = $products->map(function($product) {
+            $results = $products->map(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -155,7 +230,7 @@ class ProductController extends Controller
                 // Find the closest word
                 $closestWord = null;
                 $shortestDistance = -1;
-                
+
                 // We check the last word of the query or the full query (without punctuation)
                 $cleanQuery = strtolower(preg_replace('/[^a-zA-Z0-9\s]/', '', $query));
 
@@ -169,7 +244,7 @@ class ProductController extends Controller
                             break;
                         }
                         if ($lev < $shortestDistance || $shortestDistance < 0) {
-                            $closestWord  = $word;
+                            $closestWord = $word;
                             $shortestDistance = $lev;
                         }
                     }
@@ -188,8 +263,8 @@ class ProductController extends Controller
             ->inRandomOrder()
             ->take(2)
             ->get();
-            
-        $suggested = $suggestedProducts->map(function($product) {
+
+        $suggested = $suggestedProducts->map(function ($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -203,7 +278,7 @@ class ProductController extends Controller
         return response()->json([
             'results' => $results,
             'suggested' => $suggested,
-            'did_you_mean' => $didYouMean
+            'did_you_mean' => $didYouMean,
         ]);
     }
 }

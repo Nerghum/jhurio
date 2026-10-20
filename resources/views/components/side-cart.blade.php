@@ -90,7 +90,7 @@
                             </div>
                             <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Shipping and taxes calculated at checkout.</p>
                             <div class="mt-6">
-                                <a href="#" class="flex items-center justify-center rounded-xl border border-transparent bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-secondary">Checkout</a>
+                                <button type="button" @click="checkoutCart()" class="w-full flex items-center justify-center rounded-xl border border-transparent bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-secondary">Checkout</button>
                             </div>
                             <div class="mt-6 flex justify-center text-center text-sm text-gray-500 dark:text-gray-400">
                                 <p>
