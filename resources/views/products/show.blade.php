@@ -3,55 +3,74 @@
 @section('title', $product->name)
 
 @section('content')
-<div class="bg-white dark:bg-dark py-8" x-data="productPage()">
+<div class="bg-white dark:bg-dark py-4 sm:py-6 lg:py-8" x-data="productPage()">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <!-- Breadcrumbs -->
-        <nav class="flex text-sm text-gray-500 dark:text-gray-400 mb-8" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        @php
+            $firstCategory = $product->categories->first();
+        @endphp
+        <!-- Breadcrumbs (Mobile Optimized: Clean, Compact, No Product Name) -->
+        <nav class="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4 lg:mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center flex-wrap gap-1 sm:gap-2">
                 <li class="inline-flex items-center">
-                    <a href="{{ route('home') }}" class="hover:text-primary transition-colors">Home</a>
+                    <a href="{{ route('home') }}" class="hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-1 font-medium">
+                        <i data-lucide="home" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span>Home</span>
+                    </a>
                 </li>
                 <li>
-                    <div class="flex items-center">
-                        <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
-                        <a href="{{ route('shop.index') }}" class="hover:text-primary transition-colors">{{ $product->categories->first()->name ?? 'Shop' }}</a>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+                        <a href="{{ route('shop.index') }}" class="hover:text-primary dark:hover:text-primary transition-colors font-medium">Shop</a>
                     </div>
                 </li>
+                @if($firstCategory)
                 <li aria-current="page">
-                    <div class="flex items-center">
-                        <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
-                        <span class="text-gray-800 dark:text-gray-200 font-medium truncate max-w-xs">{{ $product->name }}</span>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+                        <a href="{{ route('shop.index', ['category' => $firstCategory->slug]) }}" class="text-gray-800 dark:text-gray-200 font-semibold hover:text-primary dark:hover:text-primary transition-colors truncate max-w-[180px] sm:max-w-none">
+                            {{ $firstCategory->name }}
+                        </a>
                     </div>
                 </li>
+                @endif
             </ol>
         </nav>
 
         <!-- Product Main Section -->
         <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
             
-            <!-- Left: Media Gallery -->
-            <div class="flex flex-col-reverse lg:flex-row gap-4 lg:gap-6 mb-10 lg:mb-0">
-                <!-- Thumbnails (Vertical on Desktop, Horizontal on Mobile) -->
-                <div class="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-y-auto lg:max-h-[600px] scrollbar-hide py-1 lg:py-0 w-full lg:w-24 flex-shrink-0">
+            <!-- Left: Media Gallery (Optimized Mobile: 24% Vertical Thumbnails Left, Main Image Right, Max 60vh) -->
+            <div class="flex flex-row gap-2 sm:gap-3 lg:gap-4 mb-6 lg:mb-0 h-[50vh] sm:h-[55vh] max-h-[60vh] lg:h-[580px] lg:max-h-[600px] items-stretch">
+                <!-- Thumbnails (Vertical on Mobile 24% width, Vertical on Desktop w-24) -->
+                <div x-show="images.length > 1" 
+                     class="flex flex-col gap-2 sm:gap-2.5 overflow-y-auto max-h-full scrollbar-hide py-0.5 w-[24%] lg:w-24 flex-shrink-0" 
+                     style="scrollbar-width: none; -ms-overflow-style: none;">
                     <template x-for="(img, index) in images" :key="index">
                         <button 
+                            type="button"
                             @click="activeImage = img"
-                            :class="{'border-primary dark:border-primary': activeImage === img, 'border-gray-200 dark:border-gray-700 hover:border-primary/50': activeImage !== img}"
-                            class="relative flex-shrink-0 w-20 h-20 lg:w-full lg:h-24 rounded-xl border-2 overflow-hidden focus:outline-none transition-all"
+                            :class="{'border-primary dark:border-primary ring-2 ring-primary/20 shadow-sm opacity-100': activeImage === img, 'border-gray-200 dark:border-gray-700 hover:border-primary/50 opacity-60 hover:opacity-100': activeImage !== img}"
+                            class="relative flex-shrink-0 w-full aspect-square rounded-lg sm:rounded-xl border-2 overflow-hidden focus:outline-none transition-all p-0.5 bg-white dark:bg-gray-800"
                         >
-                            <img :src="img" alt="Thumbnail" class="w-full h-full object-cover">
+                            <img :src="img" alt="Thumbnail" class="w-full h-full object-cover rounded-md sm:rounded-lg">
                         </button>
                     </template>
                 </div>
                 
-                <!-- Main Image -->
-                <div class="w-full relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-[600px] group">
-                    <img :src="activeImage" alt="{{ $product->name }}" class="w-full h-full object-cover object-center transition-transform duration-700" :class="{'scale-150 cursor-zoom-in': zoom}" @click="zoom = !zoom" @mousemove="zoomImage(event)">
+                <!-- Main Large Image -->
+                <div class="flex-1 min-w-0 h-full max-h-full relative bg-gray-50 dark:bg-gray-800/80 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700/60 overflow-hidden flex items-center justify-center group">
+                    <img :src="activeImage" 
+                         src="{{ $product->thumbnail?->url ?? $product->image_url ?? '' }}"
+                         alt="{{ $product->name }}" 
+                         class="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-500" 
+                         :class="{'scale-150 cursor-zoom-in': zoom}" 
+                         @click="zoom = !zoom" 
+                         @mousemove="zoomImage(event)">
                     
                     @if($product->video_url)
-                    <a href="{{ $product->video_url }}" target="_blank" class="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur text-gray-900 dark:text-white p-3 rounded-xl shadow-lg hover:scale-110 transition-transform">
-                        <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                    <a href="{{ $product->video_url }}" target="_blank" class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur text-gray-900 dark:text-white p-2 sm:p-2.5 rounded-xl shadow-lg hover:scale-110 transition-transform z-10" title="Watch Product Video">
+                        <i data-lucide="play" class="w-4 h-4 sm:w-5 sm:h-5 fill-current"></i>
                     </a>
                     @endif
                 </div>
@@ -60,7 +79,7 @@
             <!-- Right: Product Details -->
             <div class="flex flex-col">
                 <div class="flex justify-between items-start mb-2 gap-4">
-                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $product->name }}</h1>
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $product->name }}</h1>
                     
                     @php
                         $inWishlist = false;
@@ -76,33 +95,50 @@
                     </button>
                 </div>
                 
-                <!-- Reviews & Badges -->
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="flex items-center">
-                        <div class="flex text-yellow-400">
-                            @for($i = 1; $i <= 5; $i++)
-                                @if($i <= round($product->averageRating()))
-                                    <i data-lucide="star" class="w-4 h-4 fill-current"></i>
-                                @else
-                                    <i data-lucide="star" class="w-4 h-4 text-gray-300 dark:text-gray-600"></i>
-                                @endif
-                            @endfor
-                        </div>
-                        <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                            <a href="#customer-reviews" class="hover:text-primary transition-colors">({{ $product->reviewsCount() }} reviews)</a>
-                        </span>
+                <!-- Reviews -->
+                <div class="flex items-center mb-2">
+                    <div class="flex text-yellow-400">
+                        @for($i = 1; $i <= 5; $i++)
+                            @if($i <= round($product->averageRating()))
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            @else
+                                <i data-lucide="star" class="w-4 h-4 text-gray-300 dark:text-gray-600"></i>
+                            @endif
+                        @endfor
                     </div>
-                    @if($product->tags->count() > 0)
-                        <div class="hidden sm:block w-1.5 h-1.5 rounded-xl bg-gray-300 dark:bg-gray-600"></div>
-                        <div class="flex gap-2">
-                            @foreach($product->tags as $tag)
-                                <span class="px-2.5 py-0.5 rounded-xl text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                                    {{ $tag->name }}
-                                </span>
-                            @endforeach
-                        </div>
-                    @endif
+                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                        <a href="#customer-reviews" class="hover:text-primary transition-colors">({{ $product->reviewsCount() }} reviews)</a>
+                    </span>
                 </div>
+
+                <!-- Categories & Tags (Horizontal under review in one line, as link text, no label text, tight gap, no bottom margin) -->
+                @php
+                    $categoryLinks = collect();
+                    foreach ($product->categories as $category) {
+                        $categoryLinks->push([
+                            'name' => $category->name,
+                            'url' => route('shop.index', ['category' => $category->slug]),
+                        ]);
+                    }
+                    foreach ($product->tags as $tag) {
+                        $categoryLinks->push([
+                            'name' => $tag->name,
+                            'url' => route('shop.index', ['q' => $tag->name]),
+                        ]);
+                    }
+                @endphp
+
+                @if($categoryLinks->count() > 0)
+                    <!-- Desktop: Shown under review, hidden on mobile -->
+                    <div class="hidden lg:flex text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex-wrap items-center gap-y-0.5 mb-0">
+                        @foreach($categoryLinks as $index => $item)
+                            <a href="{{ $item['url'] }}" 
+                               class="text-primary hover:text-secondary dark:text-secondary dark:hover:text-primary font-medium hover:underline transition-colors">
+                                {{ $item['name'] }}
+                            </a>@if(!$loop->last)<span class="text-gray-400 dark:text-gray-500 mr-1.5">,</span>@endif
+                        @endforeach
+                    </div>
+                @endif
 
                 <!-- Price -->
                 <div class="mb-6 flex items-end gap-3">
@@ -395,6 +431,18 @@
                                 Buy it Now
                             </button>
                         </div>
+
+                        <!-- Categories (Mobile: Placed under Add to Cart / Buy Now buttons) -->
+                        @if($categoryLinks->count() > 0)
+                            <div class="mt-3.5 text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex lg:hidden flex-wrap items-center gap-y-0.5">
+                                @foreach($categoryLinks as $index => $item)
+                                    <a href="{{ $item['url'] }}" 
+                                       class="text-primary hover:text-secondary dark:text-secondary dark:hover:text-primary font-medium hover:underline transition-colors">
+                                        {{ $item['name'] }}
+                                    </a>@if(!$loop->last)<span class="text-gray-400 dark:text-gray-500 mr-1.5">,</span>@endif
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Trust Badges -->
@@ -438,6 +486,9 @@
             </div>
         </div>
 
+    <!-- Image Text Sections: Before Description -->
+    <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="before_description" />
+
     <!-- Full Width Description -->
     @if($product->content)
     <div class="mt-16 lg:mt-24 border-t border-gray-200 dark:border-gray-800 pt-12">
@@ -449,6 +500,20 @@
         </div>
     </div>
     @endif
+    
+    <!-- Image Text Sections: After Description -->
+    <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="after_description" />
+
+    <!-- Image Text Sections: Before Video -->
+    <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="before_video" />
+
+    <!-- Product Video Reels Carousel (5 in a row, hover to play) -->
+    @if(!empty($product->video_reels) && count($product->video_reels) > 0)
+        <x-product-video-reels :reels="$product->video_reels" />
+    @endif
+
+    <!-- Image Text Sections: After Video -->
+    <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="after_video" />
     
     <!-- Frequently Bought Together (Bundles) -->
     @if($product->bundles->count() > 0)
@@ -516,6 +581,9 @@
         </div>
     </div>
     @endif
+
+    <!-- Image Text Sections: Before Reviews -->
+    <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="before_reviews" />
 
     <!-- Customer Reviews Section -->
     <div id="customer-reviews" class="mt-16 lg:mt-24 border-t border-gray-200 dark:border-gray-800 pt-12">
@@ -632,7 +700,7 @@
                                 <div class="flex justify-between items-start mb-4">
                                     <div>
                                         <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ $review->user->name ?? 'Anonymous' }}</span>
+                                            <span class="font-bold text-gray-900 dark:text-white">{{ $review->author_name }}</span>
                                             @if($review->is_verified_purchase)
                                                 <span class="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
                                                     <i data-lucide="check-circle" class="w-3 h-3"></i> Verified Buyer
@@ -677,6 +745,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Image Text Sections: After Reviews -->
+    <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="after_reviews" />
 
     <!-- Related Products -->
     @if($relatedProducts->count() > 0)

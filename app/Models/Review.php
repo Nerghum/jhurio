@@ -12,17 +12,26 @@ class Review extends Model
     protected $fillable = [
         'product_id',
         'user_id',
+        'reviewer_name',
+        'reviewer_email',
         'order_id',
         'rating',
         'comment',
         'is_verified_purchase',
         'status',
         'media',
+        'created_at',
     ];
 
     protected $casts = [
         'media' => 'array',
+        'is_verified_purchase' => 'boolean',
     ];
+
+    public function getAuthorNameAttribute(): string
+    {
+        return $this->reviewer_name ?: ($this->user?->name ?? 'Customer');
+    }
 
     public function order()
     {

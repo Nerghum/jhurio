@@ -44,6 +44,8 @@ class ProductController extends Controller
             'tags_json' => 'nullable|string',
             'options' => 'nullable|json',
             'bundle_settings' => 'nullable|string',
+            'image_text_sections' => 'nullable',
+            'video_reels' => 'nullable',
         ]);
 
         $productData = $request->except(['categories', 'tags_json']);
@@ -56,6 +58,20 @@ class ProductController extends Controller
                 : json_decode($request->bundle_settings, true);
         } else {
             $productData['bundle_settings'] = null;
+        }
+        if ($request->filled('image_text_sections')) {
+            $productData['image_text_sections'] = is_array($request->image_text_sections)
+                ? $request->image_text_sections
+                : json_decode($request->image_text_sections, true);
+        } else {
+            $productData['image_text_sections'] = null;
+        }
+        if ($request->filled('video_reels')) {
+            $productData['video_reels'] = is_array($request->video_reels)
+                ? $request->video_reels
+                : json_decode($request->video_reels, true);
+        } else {
+            $productData['video_reels'] = null;
         }
 
         $product = Product::create($productData);
@@ -99,7 +115,7 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $tags = Tag::all();
-        $product->load('gallery', 'variations', 'thumbnail', 'tags', 'categories');
+        $product->load('gallery', 'variations', 'thumbnail', 'tags', 'categories', 'reviews.user');
 
         return view('admin.products.edit', compact('product', 'categories', 'tags'));
     }
@@ -122,6 +138,8 @@ class ProductController extends Controller
             'tags_json' => 'nullable|string',
             'options' => 'nullable|json',
             'bundle_settings' => 'nullable|string',
+            'image_text_sections' => 'nullable',
+            'video_reels' => 'nullable',
         ]);
 
         $productData = $request->except(['categories', 'tags_json']);
@@ -134,6 +152,20 @@ class ProductController extends Controller
                 : json_decode($request->bundle_settings, true);
         } else {
             $productData['bundle_settings'] = null;
+        }
+        if ($request->filled('image_text_sections')) {
+            $productData['image_text_sections'] = is_array($request->image_text_sections)
+                ? $request->image_text_sections
+                : json_decode($request->image_text_sections, true);
+        } else {
+            $productData['image_text_sections'] = null;
+        }
+        if ($request->filled('video_reels')) {
+            $productData['video_reels'] = is_array($request->video_reels)
+                ? $request->video_reels
+                : json_decode($request->video_reels, true);
+        } else {
+            $productData['video_reels'] = null;
         }
 
         $product->update($productData);

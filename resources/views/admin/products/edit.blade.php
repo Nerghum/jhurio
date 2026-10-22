@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto" x-data="productForm()">
-    <form action="{{ route('admin.products.update', $product) }}" method="POST" id="productForm">
+    <form action="{{ route('admin.products.update', $product) }}" method="POST" id="productForm" @submit="syncAllEditors()">
         @csrf
         @method('PUT')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -385,6 +385,381 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Image & Text Story Sections -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <input type="hidden" name="image_text_sections" x-ref="imageTextSectionsInput" :value="JSON.stringify(image_text_sections)">
+
+                    <!-- Card Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Image & Text Story Sections</h3>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-secondary" x-text="image_text_sections.length + ' Section' + (image_text_sections.length === 1 ? '' : 's')"></span>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Add rich visual sections with flippable image/text layouts and custom placement anywhere on the product page.
+                            </p>
+                        </div>
+                        <button type="button" @click="addImageTextSection()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-secondary transition shadow-sm self-start sm:self-center">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Add Story Section</span>
+                        </button>
+                    </div>
+
+                    <!-- Sections List -->
+                    <div class="space-y-4">
+                        <template x-for="(section, index) in image_text_sections" :key="section.id">
+                            <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 relative space-y-5 transition-all hover:border-gray-300 dark:hover:border-gray-600">
+                                <!-- Section Top Bar -->
+                                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-200/80 dark:border-gray-700">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-black" x-text="index + 1"></span>
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white" x-text="section.title ? section.title : 'Untitled Section'"></span>
+                                        
+                                        <!-- Layout Orientation Badge -->
+                                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border"
+                                              :class="section.image_position === 'left' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700'"
+                                              x-text="section.image_position === 'left' ? '⇄ Flipped (Image Left)' : 'Standard (Text Left)'">
+                                        </span>
+
+                                        <!-- Position Badge -->
+                                        <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-gray-200/80 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                              x-text="section.display_position === 'before_description' ? 'Top (Before Desc)' : (section.display_position === 'before_video' ? 'Before Video Reels' : (section.display_position === 'after_video' ? 'After Video Reels' : (section.display_position === 'before_reviews' ? 'Before Reviews' : (section.display_position === 'after_reviews' ? 'Bottom (After Reviews)' : 'After Description'))))">
+                                        </span>
+                                    </div>
+
+                                    <!-- Action Controls: Up / Down / Remove -->
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" @click="moveSectionUp(index)" :disabled="index === 0" 
+                                                title="Move Up"
+                                                class="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition">
+                                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                                        </button>
+                                        <button type="button" @click="moveSectionDown(index)" :disabled="index === image_text_sections.length - 1" 
+                                                title="Move Down"
+                                                class="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition">
+                                            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                                        </button>
+                                        <button type="button" @click="removeImageTextSection(index)" 
+                                                title="Remove Section"
+                                                class="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 transition ml-1">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Form Grid -->
+                                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                                    <!-- Left Column: Content Details (7 cols) -->
+                                    <div class="lg:col-span-7 space-y-3.5">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                Eyebrow / Subtitle Badge <span class="text-gray-400 font-normal">(Optional)</span>
+                                            </label>
+                                            <input type="text" x-model="section.subtitle" 
+                                                   placeholder="e.g. 100% Organic, Premium Quality, Handcrafted" 
+                                                   class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                Section Headline / Title <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" x-model="section.title" 
+                                                   placeholder="e.g. Traditional Cold-Pressed Extraction Method" 
+                                                   class="w-full px-3.5 py-2 text-xs font-medium rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                        </div>
+
+                                        <div x-data="sectionQuill(section)">
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                Content / Story Description
+                                            </label>
+                                            <div class="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+                                                <div x-ref="editor" 
+                                                     data-section-quill
+                                                     :data-section-id="section.id"
+                                                     class="min-h-[170px] text-gray-900 dark:text-white"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Optional Button Link -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                            <div>
+                                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                    Button Label <span class="text-gray-400 font-normal">(Optional)</span>
+                                                </label>
+                                                <input type="text" x-model="section.button_text" 
+                                                       placeholder="e.g. Learn More, Order Now" 
+                                                       class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                    Button URL <span class="text-gray-400 font-normal">(Optional)</span>
+                                                </label>
+                                                <input type="text" x-model="section.button_url" 
+                                                       placeholder="e.g. # or /contact" 
+                                                       class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Column: Settings & Image (5 cols) -->
+                                    <div class="lg:col-span-5 space-y-3.5">
+                                        <!-- Placement Selector -->
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                Where to Show on Product Page
+                                            </label>
+                                            <select x-model="section.display_position" 
+                                                    class="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                                <option value="before_description">Before Description</option>
+                                                <option value="after_description">After Description (Default)</option>
+                                                <option value="before_video">Before Video Reels</option>
+                                                <option value="after_video">After Video Reels</option>
+                                                <option value="before_reviews">Before Customer Reviews</option>
+                                                <option value="after_reviews">After Customer Reviews</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Flip Layout / Orientation Toggle -->
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                Layout Orientation (Flip)
+                                            </label>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <button type="button" @click="section.image_position = 'right'"
+                                                        class="px-2.5 py-2 text-xs font-medium rounded-xl border flex items-center justify-center gap-1.5 transition select-none"
+                                                        :class="section.image_position !== 'left' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'">
+                                                    <span class="font-bold">Text</span>
+                                                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                                    <span class="font-bold">Image</span>
+                                                </button>
+                                                <button type="button" @click="section.image_position = 'left'"
+                                                        class="px-2.5 py-2 text-xs font-medium rounded-xl border flex items-center justify-center gap-1.5 transition select-none"
+                                                        :class="section.image_position === 'left' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'">
+                                                    <span class="font-bold">Image</span>
+                                                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                                    <span class="font-bold">Text</span>
+                                                    <span class="text-[10px] ml-0.5 opacity-80">(Flip)</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Section Image Selection -->
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                Section Image
+                                            </label>
+                                            
+                                            <!-- When Image is selected -->
+                                            <div x-show="section.image_url" class="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+                                                <img :src="section.image_url" class="w-full h-36 object-cover object-center" alt="Section preview">
+                                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <button type="button" @click="openSectionMediaSelector(index)" class="px-3 py-1.5 bg-white text-gray-900 rounded-lg text-xs font-semibold hover:bg-gray-100 transition shadow">
+                                                        Change
+                                                    </button>
+                                                    <button type="button" @click="removeSectionImage(index)" class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition shadow">
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- When No Image is selected -->
+                                            <div x-show="!section.image_url" 
+                                                 @click="openSectionMediaSelector(index)"
+                                                 class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 text-center cursor-pointer hover:border-primary dark:hover:border-primary transition group bg-white dark:bg-gray-800">
+                                                <div class="w-9 h-9 rounded-full bg-primary/10 text-primary mx-auto flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                                    <i data-lucide="image" class="w-4 h-4"></i>
+                                                </div>
+                                                <span class="text-xs font-bold text-gray-700 dark:text-gray-200 block">Select from Media Library</span>
+                                                <span class="text-[10px] text-gray-400 block mt-0.5">Click to choose or upload image</span>
+                                            </div>
+
+                                            <!-- Direct Image URL Input (Fallback) -->
+                                            <div class="mt-2">
+                                                <input type="text" x-model="section.image_url" 
+                                                       placeholder="Or paste direct image URL (https://...)" 
+                                                       class="w-full px-3 py-1 text-[11px] rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Empty State -->
+                        <div x-show="image_text_sections.length === 0" 
+                             class="text-center py-10 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 text-primary mx-auto flex items-center justify-center mb-3">
+                                <i data-lucide="layout-template" class="w-6 h-6"></i>
+                            </div>
+                            <h5 class="text-sm font-bold text-gray-900 dark:text-white">No Story Sections Added Yet</h5>
+                            <p class="text-xs text-gray-500 max-w-md mx-auto mt-1 mb-4">
+                                Showcase your product features, organic sources, certifications, or craftsmanship using alternating left/right image and text cards.
+                            </p>
+                            <button type="button" @click="addImageTextSection()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-secondary transition shadow-sm">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>Add First Story Section</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Reels Carousel (YouTube Shorts / Reels) -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <input type="hidden" name="video_reels" x-ref="videoReelsInput" :value="JSON.stringify(video_reels)">
+
+                    <!-- Card Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400 flex items-center justify-center">
+                                    <i data-lucide="video" class="w-4 h-4"></i>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Video Reels Carousel</h3>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400" 
+                                          x-text="video_reels.length + ' Reel' + (video_reels.length === 1 ? '' : 's')"></span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Display 5 vertical reels in a row after the product description. Hovering over a reel plays video muted, clicking opens the reel in full with sound. Paste a YouTube Shorts URL, watch URL, or 11-character video ID.
+                            </p>
+                        </div>
+                        <button type="button" @click="addVideoReel()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition shadow-sm self-start sm:self-center">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Add Video Reel</span>
+                        </button>
+                    </div>
+
+                    <!-- Reels List -->
+                    <div class="space-y-4">
+                        <template x-for="(reel, index) in video_reels" :key="reel.id">
+                            <div class="p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 relative space-y-4 transition-all hover:border-gray-300 dark:hover:border-gray-600">
+                                <!-- Top Bar -->
+                                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-200/80 dark:border-gray-700">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black" x-text="index + 1"></span>
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white" x-text="reel.title ? reel.title : 'Reel #' + (index + 1)"></span>
+                                        
+                                        <template x-if="reel.badge">
+                                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" x-text="reel.badge"></span>
+                                        </template>
+
+                                        <template x-if="extractYouTubeId(reel.youtube_id)">
+                                            <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-gray-200/70 text-gray-700 dark:bg-gray-700 dark:text-gray-300" x-text="'ID: ' + extractYouTubeId(reel.youtube_id)"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" @click="moveReelUp(index)" :disabled="index === 0" 
+                                                title="Move Up"
+                                                class="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition">
+                                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                                        </button>
+                                        <button type="button" @click="moveReelDown(index)" :disabled="index === video_reels.length - 1" 
+                                                title="Move Down"
+                                                class="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition">
+                                            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                                        </button>
+                                        <button type="button" @click="removeVideoReel(index)" 
+                                                title="Remove Reel"
+                                                class="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 transition ml-1">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Input Fields & Live Thumbnail Preview -->
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                    <!-- Left: Inputs (9 cols) -->
+                                    <div class="md:col-span-9 space-y-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                YouTube Shorts / Reel Video ID or Full URL <span class="text-red-500">*</span>
+                                            </label>
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-red-600">
+                                                    <i data-lucide="youtube" class="w-4 h-4"></i>
+                                                </div>
+                                                <input type="text" x-model="reel.youtube_id" 
+                                                       @input="reel.youtube_id = reel.youtube_id.trim()"
+                                                       placeholder="e.g. https://www.youtube.com/shorts/dQw4w9WgXcQ or dQw4w9WgXcQ" 
+                                                       class="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-red-500 focus:border-red-500">
+                                            </div>
+                                            <p class="text-[11px] text-gray-400 mt-1">
+                                                Supports: <code class="font-mono text-gray-500 dark:text-gray-400">youtube.com/shorts/ID</code>, <code class="font-mono text-gray-500 dark:text-gray-400">youtu.be/ID</code>, or 11-char ID.
+                                            </p>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                    Reel Caption / Title <span class="text-gray-400 font-normal">(Optional)</span>
+                                                </label>
+                                                <input type="text" x-model="reel.title" 
+                                                       placeholder="e.g. Real Customer Review, In Use Demonstration" 
+                                                       class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-red-500 focus:border-red-500">
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                                    Corner Badge Tag <span class="text-gray-400 font-normal">(Optional)</span>
+                                                </label>
+                                                <input type="text" x-model="reel.badge" 
+                                                       placeholder="e.g. Review, Trending, Featured, 4.9★" 
+                                                       class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-red-500 focus:border-red-500">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right: Live Thumbnail Preview (3 cols) -->
+                                    <div class="md:col-span-3 flex flex-col items-center justify-center">
+                                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 self-start md:self-center">
+                                            Live Thumbnail Preview
+                                        </label>
+                                        <div class="w-24 sm:w-28 aspect-[9/16] rounded-xl overflow-hidden bg-black border border-gray-300 dark:border-gray-700 relative shadow-sm flex items-center justify-center group/thumb">
+                                            <template x-if="extractYouTubeId(reel.youtube_id)">
+                                                <img :src="'https://img.youtube.com/vi/' + extractYouTubeId(reel.youtube_id) + '/hqdefault.jpg'" 
+                                                     alt="Reel preview"
+                                                     class="w-full h-full object-cover">
+                                            </template>
+                                            <template x-if="!extractYouTubeId(reel.youtube_id)">
+                                                <div class="text-center p-2 text-gray-400">
+                                                    <i data-lucide="play" class="w-6 h-6 mx-auto mb-1 opacity-40"></i>
+                                                    <span class="text-[10px] block opacity-60">Enter ID above</span>
+                                                </div>
+                                            </template>
+                                            <template x-if="extractYouTubeId(reel.youtube_id)">
+                                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                                                    <i data-lucide="play" class="w-6 h-6 text-white drop-shadow"></i>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Empty State -->
+                        <div x-show="video_reels.length === 0" 
+                             class="text-center py-10 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30">
+                            <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-600 mx-auto flex items-center justify-center mb-3">
+                                <i data-lucide="video" class="w-6 h-6"></i>
+                            </div>
+                            <h5 class="text-sm font-bold text-gray-900 dark:text-white">No Video Reels Added Yet</h5>
+                            <p class="text-xs text-gray-500 max-w-md mx-auto mt-1 mb-4">
+                                Add 5 or more YouTube Shorts / Reel videos. They will be displayed in an interactive 5-in-a-row carousel after description, with hover preview and modal playback.
+                            </p>
+                            <button type="button" @click="addVideoReel()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition shadow-sm">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>Add First Video Reel</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- Sidebar -->
             <div class="space-y-6">
@@ -506,6 +881,100 @@
                         <input type="url" name="video_url" value="{{ $product->video_url }}" class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white placeholder-gray-400" placeholder="https://youtube.com/watch?v=...">
                     </div>
                 </div>
+
+                <!-- Customer Reviews Summary & Quick Add -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Customer Reviews</h3>
+                            <span class="text-xs text-gray-400">Total {{ $product->reviews->count() }} reviews ({{ $product->reviewsCount() }} active)</span>
+                        </div>
+                        <a href="{{ route('admin.reviews.create', ['product_id' => $product->id]) }}" 
+                           class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-xl hover:bg-secondary transition shadow-sm">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Add Review</span>
+                        </a>
+                    </div>
+
+                    <!-- Rating Score Banner -->
+                    <div class="bg-amber-50/70 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-black text-gray-900 dark:text-white">{{ number_format($product->averageRating(), 1) }}</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">/ 5.0</span>
+                            </div>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400">Live Storefront Rating</span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <div class="flex items-center gap-0.5 text-amber-500">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="w-4 h-4 {{ $i <= round($product->averageRating()) ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600 fill-none' }}" viewBox="0 0 20 20" stroke="currentColor" stroke-width="0.5">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                @endfor
+                            </div>
+                            <span class="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">{{ $product->reviewsCount() }} Approved</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Reviews List with Direct Edit Buttons -->
+                    <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                        @forelse($product->reviews as $r)
+                            <div class="p-3 rounded-xl border border-gray-200/80 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-xs space-y-2 hover:border-gray-300 transition">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <div class="flex items-center gap-1.5 font-bold text-gray-900 dark:text-white">
+                                            <span>{{ $r->author_name }}</span>
+                                            @if($r->is_verified_purchase)
+                                                <span class="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-1.5 py-0.2 rounded font-bold">Verified</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-1 text-amber-500 mt-0.5">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <svg class="w-3 h-3 {{ $i <= $r->rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 fill-none' }}" viewBox="0 0 20 20" stroke="currentColor" stroke-width="0.5">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                            @endfor
+                                            <span class="text-[10px] text-gray-400 ml-1">{{ $r->created_at->format('d M Y') }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Direct Edit & Delete Buttons -->
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <a href="{{ route('admin.reviews.edit', $r) }}" 
+                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-primary bg-primary/10 hover:bg-primary hover:text-white transition shadow-sm"
+                                           title="Edit this review">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            <span>Edit</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                @if($r->comment)
+                                    <p class="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700">
+                                        {{ $r->comment }}
+                                    </p>
+                                @endif
+                            </div>
+                        @empty
+                            <div class="text-center py-5 px-3 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-900/20">
+                                <p class="text-xs text-gray-500">No reviews yet for this product.</p>
+                                <a href="{{ route('admin.reviews.create', ['product_id' => $product->id]) }}" 
+                                   class="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-1.5">
+                                    <i data-lucide="plus" class="w-3 h-3"></i> Add the first review
+                                </a>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <a href="{{ route('admin.reviews.index', ['product_id' => $product->id]) }}" 
+                           class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700/60 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">
+                            <i data-lucide="list" class="w-3.5 h-3.5"></i>
+                            <span>Manage All Reviews Table</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -519,9 +988,64 @@
 <style>
     .ql-editor ul { list-style-type: disc; padding-left: 1.5em; }
     .ql-editor ol { list-style-type: decimal; padding-left: 1.5em; }
+    .dark .ql-toolbar.ql-snow { border-color: #4b5563; background-color: #1f2937; }
+    .dark .ql-container.ql-snow { border-color: #4b5563; background-color: #111827; }
+    .dark .ql-snow .ql-stroke { stroke: #e5e7eb; }
+    .dark .ql-snow .ql-fill { fill: #e5e7eb; }
+    .dark .ql-snow .ql-picker { color: #e5e7eb; }
+    .dark .ql-snow .ql-picker-options { background-color: #1f2937; border-color: #4b5563; }
 </style>
 <script>
     document.addEventListener('alpine:init', () => {
+        Alpine.data('sectionQuill', (section) => ({
+            quill: null,
+            init() {
+                this.$nextTick(() => {
+                    if (!this.$refs.editor || this.$refs.editor.__quill) return;
+
+                    const self = this;
+                    this.quill = new Quill(this.$refs.editor, {
+                        theme: 'snow',
+                        modules: {
+                            imageResize: {},
+                            toolbar: {
+                                container: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{'list': 'ordered'}, {'list': 'bullet'}],
+                                    [{'align': []}],
+                                    ['link', 'image'],
+                                    ['clean']
+                                ],
+                                handlers: {
+                                    image: function() {
+                                        window.addEventListener('media-selected-section-editor', (e) => {
+                                            let range = self.quill.getSelection(true);
+                                            if (!range) range = { index: self.quill.getLength() };
+                                            self.quill.insertEmbed(range.index, 'image', e.detail.url);
+                                        }, { once: true });
+                                        window.dispatchEvent(new CustomEvent('open-media-modal', { detail: { callbackEvent: 'media-selected-section-editor' } }));
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    this.$refs.editor.__quill = this.quill;
+
+                    if (section && section.content) {
+                        this.quill.root.innerHTML = section.content;
+                    }
+
+                    this.quill.on('text-change', () => {
+                        if (section) {
+                            section.content = this.quill.root.innerHTML;
+                        }
+                    });
+                });
+            }
+        }));
+
         Alpine.data('quillEditor', () => ({
             quill: null,
             init() {
@@ -603,8 +1127,27 @@
                     ]
                 ]
             ]) !!},
+            image_text_sections: ({!! json_encode($product->image_text_sections ?? []) !!} || []).map((s, idx) => ({
+                id: s.id || ('sec_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 6)),
+                subtitle: s.subtitle || '',
+                title: s.title || '',
+                content: s.content || '',
+                image_position: s.image_position || 'right',
+                display_position: s.display_position || 'after_description',
+                media_id: s.media_id || null,
+                image_url: s.image_url || '',
+                button_text: s.button_text || '',
+                button_url: s.button_url || ''
+            })),
+            video_reels: ({!! json_encode(old('video_reels', $product->video_reels ?? [])) !!} || []).map((r, idx) => ({
+                id: r.id || ('reel_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 6)),
+                youtube_id: r.youtube_id || r.video_id || '',
+                title: r.title || '',
+                badge: r.badge || ''
+            })),
             currentMediaTarget: null,
             currentVariationIndex: null,
+            currentSectionIndex: null,
 
             init() {
                 // Listen for media selected event
@@ -617,6 +1160,11 @@
                     } else if (this.currentMediaTarget === 'variation') {
                         this.variations[this.currentVariationIndex].media_id = media.id;
                         this.variations[this.currentVariationIndex].media_url = media.url;
+                    } else if (this.currentMediaTarget === 'image_text_section') {
+                        if (this.currentSectionIndex !== null && this.image_text_sections[this.currentSectionIndex]) {
+                            this.image_text_sections[this.currentSectionIndex].media_id = media.id;
+                            this.image_text_sections[this.currentSectionIndex].image_url = media.url;
+                        }
                     }
                 });
 
@@ -734,6 +1282,118 @@
                 this.bundle_settings.tiers.splice(index, 1);
                 if (this.bundle_settings.default_tier === index) {
                     this.bundle_settings.default_tier = 'single';
+                }
+            },
+
+            addImageTextSection() {
+                if (!this.image_text_sections) {
+                    this.image_text_sections = [];
+                }
+                const newId = 'sec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+                this.image_text_sections.push({
+                    id: newId,
+                    subtitle: '',
+                    title: '',
+                    content: '',
+                    image_position: this.image_text_sections.length % 2 === 1 ? 'left' : 'right',
+                    display_position: 'after_description',
+                    media_id: null,
+                    image_url: '',
+                    button_text: '',
+                    button_url: ''
+                });
+                setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+            },
+
+            removeImageTextSection(index) {
+                this.image_text_sections.splice(index, 1);
+            },
+
+            moveSectionUp(index) {
+                if (index > 0) {
+                    const temp = this.image_text_sections[index];
+                    this.image_text_sections.splice(index, 1);
+                    this.image_text_sections.splice(index - 1, 0, temp);
+                    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+                }
+            },
+
+            moveSectionDown(index) {
+                if (index < this.image_text_sections.length - 1) {
+                    const temp = this.image_text_sections[index];
+                    this.image_text_sections.splice(index, 1);
+                    this.image_text_sections.splice(index + 1, 0, temp);
+                    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+                }
+            },
+
+            openSectionMediaSelector(index) {
+                this.currentMediaTarget = 'image_text_section';
+                this.currentSectionIndex = index;
+                window.dispatchEvent(new CustomEvent('open-media-modal', { detail: { callbackEvent: 'media-selected' } }));
+            },
+
+            removeSectionImage(index) {
+                if (this.image_text_sections[index]) {
+                    this.image_text_sections[index].media_id = null;
+                    this.image_text_sections[index].image_url = '';
+                }
+            },
+
+            extractYouTubeId(urlOrId) {
+                if (!urlOrId) return '';
+                const match = urlOrId.match(/(?:shorts\/|v\/|watch\?v=|youtu\.be\/|embed\/|^)([a-zA-Z0-9_-]{11})/);
+                return match ? match[1] : (urlOrId.trim().length === 11 ? urlOrId.trim() : '');
+            },
+
+            addVideoReel() {
+                if (!this.video_reels) this.video_reels = [];
+                const newId = 'reel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+                this.video_reels.push({
+                    id: newId,
+                    youtube_id: '',
+                    title: '',
+                    badge: 'Reel'
+                });
+                setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+            },
+
+            removeVideoReel(index) {
+                this.video_reels.splice(index, 1);
+            },
+
+            moveReelUp(index) {
+                if (index > 0) {
+                    const temp = this.video_reels[index];
+                    this.video_reels.splice(index, 1);
+                    this.video_reels.splice(index - 1, 0, temp);
+                    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+                }
+            },
+
+            moveReelDown(index) {
+                if (index < this.video_reels.length - 1) {
+                    const temp = this.video_reels[index];
+                    this.video_reels.splice(index, 1);
+                    this.video_reels.splice(index + 1, 0, temp);
+                    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+                }
+            },
+
+            syncAllEditors() {
+                document.querySelectorAll('[data-section-quill]').forEach((el) => {
+                    if (el.__quill && el.dataset.sectionId) {
+                        const sec = this.image_text_sections.find(s => s.id === el.dataset.sectionId);
+                        if (sec) {
+                            sec.content = el.__quill.root.innerHTML;
+                        }
+                    }
+                });
+                if (this.$refs.imageTextSectionsInput) {
+                    this.$refs.imageTextSectionsInput.value = JSON.stringify(this.image_text_sections);
+                }
+                if (this.$refs.videoReelsInput) {
+                    this.$refs.videoReelsInput.value = JSON.stringify(this.video_reels);
                 }
             }
         }));

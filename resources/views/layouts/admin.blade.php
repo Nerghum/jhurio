@@ -52,7 +52,7 @@
             </a>
             
             <!-- Catalog Group -->
-            @php $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*', 'admin.tags.*', 'admin.bundles.*'); @endphp
+            @php $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*', 'admin.tags.*', 'admin.bundles.*', 'admin.reviews.*'); @endphp
             <div x-data="{ open: {{ $isCatalogActive ? 'true' : 'false' }} }" class="relative">
                  
                 <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isCatalogActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
@@ -82,6 +82,13 @@
                     </a>
                     <a href="{{ route('admin.bundles.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.bundles.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
                         Product Bundles
+                    </a>
+                    <a href="{{ route('admin.reviews.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.reviews.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
+                        <span>Reviews</span>
+                        @php $pendingReviewsCount = \App\Models\Review::where('status', 'pending')->count(); @endphp
+                        @if($pendingReviewsCount > 0)
+                            <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">{{ $pendingReviewsCount }}</span>
+                        @endif
                     </a>
                 </div>
             </div>

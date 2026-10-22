@@ -9,12 +9,14 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'price', 'compare_at_price', 'image_url', 'content', 'status', 'stock_quantity', 'thumbnail_media_id', 'video_url', 'options', 'is_featured', 'bundle_settings'];
+    protected $fillable = ['name', 'slug', 'description', 'price', 'compare_at_price', 'image_url', 'content', 'status', 'stock_quantity', 'thumbnail_media_id', 'video_url', 'video_reels', 'options', 'is_featured', 'bundle_settings', 'image_text_sections'];
 
     protected $casts = [
         'options' => 'array',
         'is_featured' => 'boolean',
         'bundle_settings' => 'array',
+        'image_text_sections' => 'array',
+        'video_reels' => 'array',
     ];
 
     public function categories()
