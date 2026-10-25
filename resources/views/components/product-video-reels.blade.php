@@ -11,10 +11,10 @@
 @endphp
 
 @if($validReels->count() > 0)
-<div x-data="reelsCarousel({{ json_encode($validReels) }})" class="my-14 lg:my-20">
-    <div class="border-t border-gray-200 dark:border-gray-800 pt-10 lg:pt-14">
+<div x-data="reelsCarousel({{ json_encode($validReels) }})" class="mt-8 sm:mt-10 lg:mt-12">
+    <div class="border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8">
         <!-- Header with Title & Navigation Controls -->
-        <div class="flex items-center justify-between gap-3 mb-6 sm:mb-8">
+        <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6">
             <div class="min-w-0 flex-1">
                 <!-- Badge & Title Inline on Mobile and Desktop -->
                 <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap mb-1">

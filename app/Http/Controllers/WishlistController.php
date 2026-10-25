@@ -10,12 +10,7 @@ class WishlistController extends Controller
 {
     public function index()
     {
-        $wishlists = Wishlist::where('user_id', Auth::id())
-            ->with(['product.thumbnail'])
-            ->latest()
-            ->paginate(12);
-
-        return view('account.wishlist', compact('wishlists'));
+        return redirect()->route('account.orders', ['tab' => 'wishlist']);
     }
 
     public function toggle(Request $request)

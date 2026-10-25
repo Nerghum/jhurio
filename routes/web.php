@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AbandonedCartController;
+use App\Http\Controllers\Admin\AccountsController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\ProductBundleController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AdminController;
@@ -74,8 +76,10 @@ Route::prefix('account')->name('account.')->group(function () {
 
     // Protected customer pages
     Route::middleware('auth')->group(function () {
+        Route::get('/', fn () => redirect()->route('account.orders'))->name('index');
         Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
         Route::get('/orders/{order}', [AccountController::class, 'orderDetail'])->name('order_detail');
+        Route::post('/orders/{order}/cancel', [AccountController::class, 'cancelOrder'])->name('orders.cancel');
 
         // Addresses
         Route::get('/addresses', [AccountController::class, 'addresses'])->name('addresses');
@@ -110,6 +114,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('/reviews/{review}/status', [AdminReviewController::class, 'updateStatus'])->name('reviews.update_status');
         Route::resource('reviews', AdminReviewController::class);
 
+        // Stock Management
+        Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::post('/stock', [StockController::class, 'store'])->name('stock.store');
+        Route::post('/stock/{product}/quick-update', [StockController::class, 'quickUpdate'])->name('stock.quick_update');
+
+        // Accounts & Sales Overview
+        Route::get('/accounts', [AccountsController::class, 'index'])->name('accounts.index');
+        Route::get('/accounts/export', [AccountsController::class, 'export'])->name('accounts.export');
+
         // Orders & Customers
         Route::post('/orders/bulk-action', [AdminOrderController::class, 'bulkAction'])->name('orders.bulk_action');
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
@@ -121,6 +134,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
         Route::resource('/users', UserController::class)->except(['show']);
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::put('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
 
         // Analytics & Tracking
         Route::prefix('analytics')->name('analytics.')->group(function () {
@@ -134,6 +148,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/funnel', [AnalyticsController::class, 'funnel'])->name('funnel');
         });
         Route::get('/orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
+        Route::get('/orders/{order}/invoice/print', [AdminOrderController::class, 'printView'])->name('orders.invoice.print');
+
         Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update_status');
 
         // Messages

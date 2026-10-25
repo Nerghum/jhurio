@@ -12,15 +12,15 @@
 @endpush
 
 @section('content')
-<div class="bg-gray-50 dark:bg-gray-900 py-16 min-h-screen bangla-text">
+<div class="bg-gray-50 dark:bg-gray-900 py-8 sm:py-12 min-h-screen bangla-text">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div class="text-center mb-16">
+        <div class="text-center mb-8 sm:mb-10">
             <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">আমাদের সম্পর্কে</h1>
             <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 md:p-12 mb-12">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8 md:p-12 mb-6 sm:mb-8">
             <div class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 space-y-6">
                 
                 <p class="text-xl leading-relaxed">

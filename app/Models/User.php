@@ -50,4 +50,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class)->latest();
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class)->latest();
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
 }

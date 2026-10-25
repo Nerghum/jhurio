@@ -11,7 +11,7 @@
 @endphp
 
 @if($filteredSections->count() > 0)
-    <div class="my-12 lg:my-16 space-y-10 lg:space-y-14">
+    <div class="my-6 sm:my-8 lg:my-10 space-y-6 sm:space-y-8">
         @foreach($filteredSections as $section)
             @php
                 $title = $section['title'] ?? '';

@@ -17,20 +17,72 @@ $flow = ['pending', 'processing', 'shipped', 'delivered', 'completed'];
 $idx = array_search($order->status, $flow);
 @endphp
 
-<div class="max-w-4xl mx-auto px-4 py-8">
-    <div class="flex items-center gap-4 mb-8">
-        <a href="{{ route('account.orders') }}" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-colors">
-            <i data-lucide="arrow-left" class="w-5 h-5"></i>
-        </a>
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Order #{{ $order->id }}</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</p>
+<div class="max-w-4xl mx-auto px-4 py-8" x-data="{
+    cancelModalOpen: false,
+    cancelReason: 'Changed my mind'
+}">
+    <!-- Alerts -->
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="text-sm font-semibold">{{ session('success') }}</span>
         </div>
-        <span class="ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold {{ $s['class'] }}">
-            <i data-lucide="{{ $s['icon'] }}" class="w-4 h-4"></i>
-            {{ $s['label'] }}
-        </span>
+    @endif
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="text-sm font-semibold">{{ session('error') }}</span>
+        </div>
+    @endif
+
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <a href="{{ route('account.orders') }}" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-primary/10 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Order #{{ $order->id }}</h1>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold {{ $s['class'] }}">
+                        <i data-lucide="{{ $s['icon'] }}" class="w-3.5 h-3.5"></i>
+                        {{ $s['label'] }}
+                    </span>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            @if($order->status === 'pending')
+            <button type="button" @click="cancelModalOpen = true" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors shadow-xs">
+                <i data-lucide="x-circle" class="w-4 h-4"></i>
+                <span>Cancel Order</span>
+            </button>
+            @endif
+            <a href="{{ route('account.orders') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <i data-lucide="list" class="w-4 h-4"></i>
+                <span>All Orders</span>
+            </a>
+        </div>
     </div>
+
+    @if($order->status === 'cancelled')
+    <div class="bg-red-50/80 dark:bg-red-950/30 border border-red-200/80 dark:border-red-900/50 rounded-2xl p-5 mb-6 flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-sm text-red-900 dark:text-red-200">This order was cancelled</h4>
+            <p class="text-xs text-red-700 dark:text-red-300 mt-0.5">This order is cancelled and will not be shipped. You can re-order anytime.</p>
+            <div class="mt-3">
+                <a href="{{ route('shop.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors">
+                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                    <span>Continue Shopping</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Progress Timeline -->
     @if($order->status !== 'cancelled')
@@ -144,6 +196,25 @@ $idx = array_search($order->status, $flow);
                 </div>
             </div>
 
+            @if($order->status === 'pending')
+            <div class="bg-rose-50/60 dark:bg-rose-950/20 rounded-2xl border border-rose-200/80 dark:border-rose-900/50 p-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                        <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    </div>
+                    <h4 class="font-bold text-sm text-rose-900 dark:text-rose-200">Cancel Order</h4>
+                </div>
+                <p class="text-xs text-rose-700/80 dark:text-rose-300/80 mb-4 leading-relaxed">
+                    Need to cancel this order? Since it is still pending confirmation, you can cancel it right now with one click.
+                </p>
+                <button type="button" @click="cancelModalOpen = true" 
+                        class="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-gray-800 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 font-bold text-xs hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all shadow-xs flex items-center justify-center gap-1.5">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    <span>Cancel This Order</span>
+                </button>
+            </div>
+            @endif
+
             <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 flex items-start gap-4">
                 <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
                     <i data-lucide="help-circle" class="w-5 h-5"></i>
@@ -153,6 +224,69 @@ $idx = array_search($order->status, $flow);
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">If you have any issues with this order, please contact our support team.</p>
                     <a href="#" class="inline-block text-sm font-semibold text-primary hover:underline">Contact Support &rarr;</a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CANCEL ORDER MODAL (Above Mobile Bottom Nav) ── -->
+    <div x-show="cancelModalOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+         style="display: none;"
+         @keydown.escape.window="cancelModalOpen = false">
+        
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" @click="cancelModalOpen = false"></div>
+
+        <div class="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-6 sm:p-7 z-10"
+             x-transition:enter="transition ease-out duration-200 transform"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150 transform"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-3">
+
+            <div class="text-center">
+                <div class="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Cancel Order #{{ $order->id }}?</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs mx-auto">
+                    Are you sure you want to cancel this order? Once cancelled, it cannot be undone. You can always place a new order anytime!
+                </p>
+            </div>
+
+            <!-- Cancellation Reason -->
+            <div class="mt-4">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Reason for Cancellation (Optional)</label>
+                <select x-model="cancelReason" class="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:ring-primary focus:border-primary">
+                    <option value="Changed my mind">Changed my mind</option>
+                    <option value="Ordered by mistake">Ordered by mistake</option>
+                    <option value="Want to change delivery address">Want to change delivery address</option>
+                    <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                    <option value="Order taking too long">Order taking too long</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-3 mt-6">
+                <button type="button" @click="cancelModalOpen = false" 
+                        class="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    Keep Order
+                </button>
+                <form action="{{ route('account.orders.cancel', $order) }}" method="POST" class="flex-1">
+                    @csrf
+                    <input type="hidden" name="reason" :value="cancelReason">
+                    <button type="submit" 
+                            class="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm shadow-rose-600/30 flex items-center justify-center gap-1.5">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        <span>Yes, Cancel</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

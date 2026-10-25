@@ -445,23 +445,35 @@
                         @endif
                     </div>
 
-                    <!-- Trust Badges -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-t border-b border-gray-200 dark:border-gray-700 mb-8">
-                        <div class="flex flex-col items-center text-center">
-                            <i data-lucide="truck" class="w-6 h-6 text-gray-400 mb-2"></i>
-                            <span class="text-xs text-gray-500 font-medium">Free Shipping</span>
+                    <!-- Trust Badges (4 in a row on mobile & desktop) -->
+                    <div class="grid grid-cols-4 gap-2 sm:gap-4 py-4 sm:py-6 border-t border-b border-gray-200 dark:border-gray-700 mb-8">
+                        <div class="flex flex-col items-center text-center p-1">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-1.5 shadow-xs">
+                                <i data-lucide="badge-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">১০০% খাঁটি পণ্য</span>
+                            <span class="text-[9px] sm:text-[10px] text-gray-400 hidden sm:block">100% Authentic</span>
                         </div>
-                        <div class="flex flex-col items-center text-center">
-                            <i data-lucide="shield-check" class="w-6 h-6 text-gray-400 mb-2"></i>
-                            <span class="text-xs text-gray-500 font-medium">Secure Checkout</span>
+                        <div class="flex flex-col items-center text-center p-1">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-1.5 shadow-xs">
+                                <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">নিরাপদ পেমেন্ট</span>
+                            <span class="text-[9px] sm:text-[10px] text-gray-400 hidden sm:block">Secure Checkout</span>
                         </div>
-                        <div class="flex flex-col items-center text-center">
-                            <i data-lucide="refresh-cw" class="w-6 h-6 text-gray-400 mb-2"></i>
-                            <span class="text-xs text-gray-500 font-medium">30-Day Returns</span>
+                        <div class="flex flex-col items-center text-center p-1">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-1.5 shadow-xs">
+                                <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">সেরা কোয়ালিটি</span>
+                            <span class="text-[9px] sm:text-[10px] text-gray-400 hidden sm:block">Premium Quality</span>
                         </div>
-                        <div class="flex flex-col items-center text-center">
-                            <i data-lucide="award" class="w-6 h-6 text-gray-400 mb-2"></i>
-                            <span class="text-xs text-gray-500 font-medium">1 Year Warranty</span>
+                        <div class="flex flex-col items-center text-center p-1">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-1.5 shadow-xs">
+                                <i data-lucide="heart-handshake" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">বিশ্বস্ত সেবা</span>
+                            <span class="text-[9px] sm:text-[10px] text-gray-400 hidden sm:block">Trusted Support</span>
                         </div>
                     </div>
 
@@ -491,9 +503,9 @@
 
     <!-- Full Width Description -->
     @if($product->content)
-    <div class="mt-16 lg:mt-24 border-t border-gray-200 dark:border-gray-800 pt-12">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Product Description</h2>
-        <div class="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm w-full overflow-hidden">
+    <div class="mt-8 sm:mt-10 lg:mt-12 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Product Description</h2>
+        <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm w-full overflow-hidden">
             <div class="prose dark:prose-invert max-w-none w-full break-words overflow-x-auto">
                 {!! $product->content !!}
             </div>
@@ -517,8 +529,8 @@
     
     <!-- Frequently Bought Together (Bundles) -->
     @if($product->bundles->count() > 0)
-    <div class="mt-16 lg:mt-24 border-t border-gray-200 dark:border-gray-800 pt-12">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Frequently Bought Together</h2>
+    <div class="mt-8 sm:mt-10 lg:mt-12 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Frequently Bought Together</h2>
         <div class="grid grid-cols-1 gap-6">
             @foreach($product->bundles as $bundle)
                 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm flex flex-col md:flex-row gap-8 items-center justify-between">
@@ -586,21 +598,21 @@
     <x-product-image-text-sections :sections="$product->image_text_sections ?? []" position="before_reviews" />
 
     <!-- Customer Reviews Section -->
-    <div id="customer-reviews" class="mt-16 lg:mt-24 border-t border-gray-200 dark:border-gray-800 pt-12">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Customer Reviews</h2>
+    <div id="customer-reviews" class="mt-8 sm:mt-10 lg:mt-12 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Customer Reviews</h2>
         
         @if(session('success'))
-            <div class="mb-8 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+            <div class="mb-4 sm:mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
                 {!! session('success') !!}
             </div>
         @endif
         @if(session('error'))
-            <div class="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+            <div class="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                 {{ session('error') }}
             </div>
         @endif
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <!-- Review Summary & Form -->
             <div class="lg:col-span-1">
                 <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
@@ -751,7 +763,7 @@
 
     <!-- Related Products -->
     @if($relatedProducts->count() > 0)
-    <div class="border-t border-gray-200 dark:border-gray-800 mt-24">
+    <div class="border-t border-gray-200 dark:border-gray-800 mt-8 sm:mt-10 lg:mt-12 pt-6 sm:pt-8">
         <x-product-block 
             title="You Might Also Like" 
             :products="$relatedProducts" 
@@ -761,7 +773,7 @@
     
     <!-- Recently Viewed -->
     @if(isset($recentlyViewed) && $recentlyViewed->count() > 0)
-    <div class="border-t border-gray-200 dark:border-gray-800 mt-12 mb-12">
+    <div class="border-t border-gray-200 dark:border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 mb-4 sm:mb-6">
         <x-product-block 
             title="Recently Viewed" 
             :products="$recentlyViewed" 

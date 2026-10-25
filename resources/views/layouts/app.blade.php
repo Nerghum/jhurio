@@ -188,13 +188,25 @@
                                         <p class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ auth()->user()->phone }}</p>
                                     </div>
                                     <div class="py-1">
-                                        <a href="{{ route('account.orders') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <a href="{{ route('account.orders', ['tab' => 'current']) }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                             <i data-lucide="package" class="w-4 h-4 text-gray-400"></i>
-                                            My Orders
+                                            Active Orders
                                         </a>
-                                        <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <a href="{{ route('account.orders', ['tab' => 'completed']) }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-gray-400"></i>
+                                            Completed Orders
+                                        </a>
+                                        <a href="{{ route('account.orders', ['tab' => 'wishlist']) }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <i data-lucide="heart" class="w-4 h-4 text-gray-400"></i>
+                                            My Wishlist
+                                        </a>
+                                        <a href="{{ route('account.orders', ['tab' => 'cart']) }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <i data-lucide="shopping-cart" class="w-4 h-4 text-gray-400"></i>
+                                            Cart Details
+                                        </a>
+                                        <a href="{{ route('account.orders', ['tab' => 'addresses']) }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                             <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i>
-                                            Addresses
+                                            Saved Addresses
                                         </a>
                                     </div>
                                     <div class="border-t border-gray-100 dark:border-gray-700 py-1">
@@ -298,13 +310,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-dark border-t border-gray-100 dark:border-gray-800 mt-20">
+    <footer class="bg-white dark:bg-dark border-t border-gray-100 dark:border-gray-800">
         <!-- Main Footer Content -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
                 
                 <!-- Brand & About -->
-                <div class="space-y-6">
+                <div class="col-span-2 lg:col-span-1 space-y-6">
                     <a href="/" class="block">
                         <img src="{{ asset('assets/images/logo.png') }}" alt="Jhurio" class="h-10 w-auto">
                     </a>
@@ -325,9 +337,9 @@
                 </div>
 
                 <!-- Quick Links -->
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">Quick Links</h3>
-                    <ul class="space-y-4">
+                <div class="col-span-1">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 sm:mb-6">Quick Links</h3>
+                    <ul class="space-y-3 sm:space-y-4">
                         <li><a href="{{ route('shop.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Shop All Products</a></li>
                         <li><a href="{{ route('about') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Our Story</a></li>
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Flash Sales</a></li>
@@ -336,9 +348,9 @@
                 </div>
 
                 <!-- Customer Service -->
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">Customer Service</h3>
-                    <ul class="space-y-4">
+                <div class="col-span-1">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 sm:mb-6">Customer Service</h3>
+                    <ul class="space-y-3 sm:space-y-4">
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Track Your Order</a></li>
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Return Policy</a></li>
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Shipping Info</a></li>
@@ -347,8 +359,8 @@
                 </div>
 
                 <!-- Newsletter & Contact -->
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">Stay in the Loop</h3>
+                <div class="col-span-2 lg:col-span-1">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 sm:mb-6">Stay in the Loop</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
                         Subscribe to get special offers, free giveaways, and updates.
                     </p>
@@ -372,8 +384,8 @@
         </div>
 
         <!-- Bottom Bar -->
-        <div class="border-t border-gray-100 dark:border-gray-800 pb-24 md:pb-0">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="border-t border-gray-100 dark:border-gray-800 pb-16 md:pb-0">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center md:text-left">
                     &copy; {{ date('Y') }} LuxeCart. All rights reserved.
                 </p>
@@ -403,8 +415,8 @@
             </div>
             <span class="text-[10px] font-medium">Cart</span>
         </a>
-        <a href="#" class="flex flex-col items-center p-2 text-gray-500 hover:text-primary transition-colors">
-            <i data-lucide="user" class="w-6 h-6 mb-1"></i>
+        <a href="{{ route('account.orders') }}" class="flex flex-col items-center p-2 text-gray-500 hover:text-primary transition-colors {{ request()->routeIs('account.*') ? 'text-primary font-bold' : '' }}">
+            <i data-lucide="user" class="w-6 h-6 mb-1 {{ request()->routeIs('account.*') ? 'stroke-[2.5]' : '' }}"></i>
             <span class="text-[10px] font-medium">Account</span>
         </a>
     </div>
@@ -446,7 +458,7 @@
                 <a href="{{ route('about') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
                     <i data-lucide="info" class="w-5 h-5 text-gray-500"></i> About
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                <a href="{{ route('account.orders') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
                     <i data-lucide="user" class="w-5 h-5 text-gray-500"></i> My Account
                 </a>
                 
@@ -629,13 +641,45 @@
             }));
         });
 
+        window.showNotification = function(message, type = 'success') {
+            let container = document.getElementById('global-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'global-toast-container';
+                container.className = 'fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9999] flex flex-col gap-2 max-w-sm pointer-events-none transition-all';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-xl shadow-black/10 border border-gray-100 dark:border-gray-700 text-xs font-semibold transform transition-all duration-300 translate-y-3 opacity-0';
+
+            const iconColor = type === 'error' ? 'text-red-500' : 'text-emerald-500';
+            const iconName = type === 'error' ? 'alert-circle' : 'check-circle-2';
+            toast.innerHTML = `
+                <i data-lucide="${iconName}" class="w-4 h-4 ${iconColor} shrink-0"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-3', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-3', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        };
+
         window.toggleWishlist = async function(productId, btn) {
             try {
                 const response = await fetch('/wishlist/toggle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({ product_id: productId })
                 });
@@ -647,22 +691,50 @@
                 }
                 
                 if (data.success) {
-                    if (data.action === 'added') {
-                        btn.querySelector('i').classList.add('fill-red-500', 'text-red-500');
-                        btn.querySelector('i').classList.remove('text-gray-400');
-                    } else {
-                        btn.querySelector('i').classList.remove('fill-red-500', 'text-red-500');
-                        btn.querySelector('i').classList.add('text-gray-400');
-                        // if we are on wishlist page, remove the item
-                        let item = document.getElementById('wishlist-item-' + productId);
-                        if (item) item.remove();
+                    // Update all matching wishlist buttons on the page for this product
+                    const buttons = document.querySelectorAll(`button[onclick*="toggleWishlist(${productId}"]`);
+                    const targetButtons = buttons.length > 0 ? Array.from(buttons) : (btn ? [btn] : []);
+
+                    targetButtons.forEach(b => {
+                        const icon = b.querySelector('svg, [data-lucide], i');
+                        if (icon) {
+                            if (data.action === 'added') {
+                                icon.classList.remove('text-gray-400');
+                                icon.classList.add('fill-red-500', 'text-red-500');
+                                icon.setAttribute('fill', 'currentColor');
+                                b.classList.add('scale-110');
+                                setTimeout(() => b.classList.remove('scale-110'), 200);
+                            } else {
+                                icon.classList.remove('fill-red-500', 'text-red-500');
+                                icon.classList.add('text-gray-400');
+                                icon.setAttribute('fill', 'none');
+                            }
+                        }
+                    });
+
+                    // If we are on wishlist page or account tab, remove the item element with animation
+                    const items = document.querySelectorAll('#wishlist-item-' + productId);
+                    items.forEach(item => {
+                        item.style.opacity = '0';
+                        item.style.transform = 'scale(0.95)';
+                        item.style.transition = 'all 0.25s ease';
+                        setTimeout(() => item.remove(), 250);
+                    });
+
+                    window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: { productId, action: data.action } }));
+
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification(data.message, 'success');
                     }
-                    showNotification(data.message);
+                } else if (data.message) {
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification(data.message, 'error');
+                    }
                 }
             } catch (e) {
-                console.error(e);
+                console.error('Error toggling wishlist:', e);
             }
-        }
+        };
     </script>
     @stack('scripts')
 </body>

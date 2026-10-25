@@ -8,12 +8,12 @@
 @endphp
 
 @if(count($faqs) > 0)
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 my-8">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
     
-    <div class="text-center mb-12">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">{{ $title }}</h2>
+    <div class="text-center mb-6 sm:mb-8">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2 sm:mb-3">{{ $title }}</h2>
         @if($subtitle)
-            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">{{ $subtitle }}</p>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">{{ $subtitle }}</p>
         @endif
     </div>
 

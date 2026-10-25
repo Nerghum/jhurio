@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<div x-data="homepageBuilder()" class="max-w-5xl mx-auto space-y-6 pb-24">
+<div x-data="homepageBuilder()" class="max-w-5xl mx-auto space-y-6 pb-12">
 
     @if(session('success'))
         <div class="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 p-4 rounded-xl flex items-center border border-green-200 dark:border-green-800">

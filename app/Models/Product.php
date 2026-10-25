@@ -9,15 +9,41 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'price', 'compare_at_price', 'image_url', 'content', 'status', 'stock_quantity', 'thumbnail_media_id', 'video_url', 'video_reels', 'options', 'is_featured', 'bundle_settings', 'image_text_sections'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'price',
+        'purchase_price',
+        'compare_at_price',
+        'image_url',
+        'content',
+        'status',
+        'stock_quantity',
+        'thumbnail_media_id',
+        'video_url',
+        'video_reels',
+        'options',
+        'is_featured',
+        'bundle_settings',
+        'image_text_sections',
+    ];
 
     protected $casts = [
+        'price' => 'decimal:2',
+        'purchase_price' => 'decimal:2',
+        'compare_at_price' => 'decimal:2',
         'options' => 'array',
         'is_featured' => 'boolean',
         'bundle_settings' => 'array',
         'image_text_sections' => 'array',
         'video_reels' => 'array',
     ];
+
+    public function stockPurchases()
+    {
+        return $this->hasMany(StockPurchase::class)->latest();
+    }
 
     public function categories()
     {

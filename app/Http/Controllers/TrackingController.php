@@ -26,15 +26,22 @@ class TrackingController extends Controller
         $visitorId = $request->input('visitor_id');
         $sessionId = $request->input('session_id');
 
+        $clientIp = $request->header('CF-Connecting-IP')
+            ?? ($request->header('X-Forwarded-For') ? trim(explode(',', $request->header('X-Forwarded-For'))[0]) : null)
+            ?? $request->ip();
+        $userAgent = $request->userAgent();
+
         // Resolve Visitor
         $visitor = TrackingVisitor::where('visitor_id', $visitorId)->first();
 
         if (! $visitor) {
             $agent = new Agent;
-            $agent->setUserAgent($request->userAgent());
+            $agent->setUserAgent($userAgent);
 
             $visitor = TrackingVisitor::create([
                 'visitor_id' => $visitorId ?: (string) Str::uuid(),
+                'ip_address' => $clientIp,
+                'user_agent' => $userAgent,
                 'first_seen_at' => now(),
                 'last_seen_at' => now(),
                 'device' => $this->getDeviceType($agent),
@@ -46,9 +53,19 @@ class TrackingController extends Controller
             ]);
 
             // Resolve location async or inline using caching
-            $this->resolveLocation($visitor, $request->ip());
+            $this->resolveLocation($visitor, $clientIp);
         } else {
-            $visitor->update(['last_seen_at' => now()]);
+            $visitorUpdates = ['last_seen_at' => now()];
+            if (empty($visitor->ip_address) && $clientIp) {
+                $visitorUpdates['ip_address'] = $clientIp;
+            }
+            if (empty($visitor->user_agent) && $userAgent) {
+                $visitorUpdates['user_agent'] = $userAgent;
+            }
+            if (empty($visitor->country) && $clientIp && $clientIp !== '127.0.0.1' && $clientIp !== '::1') {
+                $this->resolveLocation($visitor, $clientIp);
+            }
+            $visitor->update($visitorUpdates);
         }
 
         // Resolve Session

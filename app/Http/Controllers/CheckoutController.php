@@ -10,10 +10,12 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariation;
+use App\Models\TrackingEvent;
 use App\Models\User;
 use App\Services\FacebookCAPIService;
 use App\Services\FirebasePushService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -78,14 +80,22 @@ class CheckoutController extends Controller
             }
         }
 
-        // Find or create user
+        // Find or create user & automatically login on this device
         $user = auth()->check() ? auth()->user() : User::where('phone', $request->phone)->first();
         if (! $user) {
             $user = User::create([
                 'name' => $request->name,
                 'phone' => $request->phone,
-                'password' => Hash::make(Str::random(16)), // Dummy password
+                'role' => 'customer',
+                'password' => Hash::make(Str::random(16)),
             ]);
+        } elseif ($user->name === 'Customer' || empty($user->name)) {
+            $user->update(['name' => $request->name]);
+        }
+
+        if (! Auth::check()) {
+            Auth::login($user, remember: true);
+            $request->session()->regenerate();
         }
 
         // Save Address to User Account
@@ -147,7 +157,18 @@ class CheckoutController extends Controller
         $totalAmount = $subTotal - $discountAmount + $deliveryCost + $bumpPrice;
         $fullAddress = $request->address.', '.$request->district;
 
+        $trackingVid = $request->cookie('jhurio_vid') ?? $request->header('X-Visitor-Id') ?? $request->input('visitor_id');
+        $trackingSid = $request->cookie('jhurio_sid') ?? $request->header('X-Session-Id') ?? $request->input('session_id');
+        $clientIp = $request->header('CF-Connecting-IP')
+            ?? ($request->header('X-Forwarded-For') ? trim(explode(',', $request->header('X-Forwarded-For'))[0]) : null)
+            ?? $request->ip();
+        $userAgent = $request->userAgent();
+
         $order = Order::create([
+            'tracking_visitor_id' => $trackingVid,
+            'tracking_session_id' => $trackingSid,
+            'ip_address' => $clientIp,
+            'user_agent' => $userAgent,
             'user_id' => $user->id,
             'name' => $request->name,
             'phone' => $request->phone,
@@ -159,6 +180,20 @@ class CheckoutController extends Controller
             'delivery_cost' => $deliveryCost,
             'status' => 'pending',
         ]);
+
+        if ($trackingVid) {
+            TrackingEvent::create([
+                'tracking_visitor_id' => $trackingVid,
+                'tracking_session_id' => $trackingSid,
+                'user_id' => $user->id,
+                'event_type' => 'purchase',
+                'page_url' => $request->fullUrl(),
+                'metadata' => [
+                    'order_id' => $order->id,
+                    'amount' => $order->total_amount,
+                ],
+            ]);
+        }
 
         // Create Main Order Item(s)
         if ($isBundle && ! empty($bundleInfo['items']) && count($bundleInfo['items']) > 0) {
@@ -172,6 +207,7 @@ class CheckoutController extends Controller
                     'product_name' => $product->name,
                     'variation_name' => $fullVarName,
                     'price' => $price,
+                    'purchase_price' => $product->purchase_price ?? 0,
                     'quantity' => 1,
                 ]);
             }
@@ -187,6 +223,7 @@ class CheckoutController extends Controller
                 'product_name' => $product->name,
                 'variation_name' => $fullVarName,
                 'price' => $price,
+                'purchase_price' => $product->purchase_price ?? 0,
                 'quantity' => $request->quantity,
             ]);
         }
@@ -200,6 +237,7 @@ class CheckoutController extends Controller
                 'product_name' => $bumpProduct->name.' (Order Bump)',
                 'variation_name' => null,
                 'price' => $bumpPrice,
+                'purchase_price' => $bumpProduct->purchase_price ?? 0,
                 'quantity' => 1,
             ]);
         }
@@ -267,14 +305,22 @@ class CheckoutController extends Controller
             return response()->json(['success' => false, 'message' => 'Cart is empty'], 400);
         }
 
-        // Find or create user
+        // Find or create user & automatically login on this device
         $user = auth()->check() ? auth()->user() : User::where('phone', $request->phone)->first();
         if (! $user) {
             $user = User::create([
                 'name' => $request->name,
                 'phone' => $request->phone,
+                'role' => 'customer',
                 'password' => Hash::make(Str::random(16)),
             ]);
+        } elseif ($user->name === 'Customer' || empty($user->name)) {
+            $user->update(['name' => $request->name]);
+        }
+
+        if (! Auth::check()) {
+            Auth::login($user, remember: true);
+            $request->session()->regenerate();
         }
 
         // Save Address
@@ -340,7 +386,18 @@ class CheckoutController extends Controller
         $totalAmount = $subTotal - $discountAmount + $deliveryCost + $bumpPrice;
         $fullAddress = $request->address.', '.$request->district;
 
+        $trackingVid = $request->cookie('jhurio_vid') ?? $request->header('X-Visitor-Id') ?? $request->input('visitor_id');
+        $trackingSid = $request->cookie('jhurio_sid') ?? $request->header('X-Session-Id') ?? $request->input('session_id');
+        $clientIp = $request->header('CF-Connecting-IP')
+            ?? ($request->header('X-Forwarded-For') ? trim(explode(',', $request->header('X-Forwarded-For'))[0]) : null)
+            ?? $request->ip();
+        $userAgent = $request->userAgent();
+
         $order = Order::create([
+            'tracking_visitor_id' => $trackingVid,
+            'tracking_session_id' => $trackingSid,
+            'ip_address' => $clientIp,
+            'user_agent' => $userAgent,
             'user_id' => $user->id,
             'name' => $request->name,
             'phone' => $request->phone,
@@ -353,12 +410,28 @@ class CheckoutController extends Controller
             'status' => 'pending',
         ]);
 
+        if ($trackingVid) {
+            TrackingEvent::create([
+                'tracking_visitor_id' => $trackingVid,
+                'tracking_session_id' => $trackingSid,
+                'user_id' => $user->id,
+                'event_type' => 'purchase',
+                'page_url' => $request->fullUrl(),
+                'metadata' => [
+                    'order_id' => $order->id,
+                    'amount' => $order->total_amount,
+                ],
+            ]);
+        }
+
         $categoryPixels = [];
         $totalItemsCount = 0;
         $contentIds = [];
 
         // Create Order Items from Cart
         foreach ($cart as $item) {
+            $product = Product::find($item['product_id']);
+
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
@@ -366,13 +439,13 @@ class CheckoutController extends Controller
                 'product_name' => $item['name'],
                 'variation_name' => $item['variation_name'],
                 'price' => $item['price'],
+                'purchase_price' => $product?->purchase_price ?? 0,
                 'quantity' => $item['quantity'],
             ]);
 
             $totalItemsCount += $item['quantity'];
             $contentIds[] = $item['product_id'];
 
-            $product = Product::find($item['product_id']);
             if ($product) {
                 foreach ($product->categories as $category) {
                     if ($category->fb_pixel_id) {
@@ -394,6 +467,7 @@ class CheckoutController extends Controller
                 'product_name' => $bumpProduct->name.' (Order Bump)',
                 'variation_name' => null,
                 'price' => $bumpPrice,
+                'purchase_price' => $bumpProduct->purchase_price ?? 0,
                 'quantity' => 1,
             ]);
         }

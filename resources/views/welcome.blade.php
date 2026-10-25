@@ -5,7 +5,7 @@
 @section('content')
 
 <!-- Dynamic Sections (Homepage Builder) -->
-<div class="space-y-12 pb-20 pt-4">
+<div class="space-y-6 sm:space-y-8 lg:space-y-10 pt-2 sm:pt-4">
 
 
 
@@ -24,6 +24,7 @@
                 :subtitle="$section->subtitle" 
                 :products="$section->products"
                 :highlight="false"
+                :section="$section"
             />
         @endif
     @endforeach

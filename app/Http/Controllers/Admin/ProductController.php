@@ -36,6 +36,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'content' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'purchase_price' => 'nullable|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0|gt:price',
             'status' => 'required|in:published,draft',
             'stock_quantity' => 'required|integer|min:0',
@@ -101,6 +102,7 @@ class ProductController extends Controller
                         'name' => $var['name'] ?? null,
                         'options' => $var['options'] ?? null,
                         'price' => $var['price'] ?? null,
+                        'purchase_price' => $var['purchase_price'] ?? null,
                         'stock_quantity' => $var['stock_quantity'] ?? 0,
                         'media_id' => $var['media_id'] ?? null,
                     ]);
@@ -130,6 +132,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'content' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'purchase_price' => 'nullable|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0|gt:price',
             'status' => 'required|in:published,draft',
             'stock_quantity' => 'required|integer|min:0',
@@ -199,6 +202,7 @@ class ProductController extends Controller
                         'name' => $var['name'] ?? null,
                         'options' => $var['options'] ?? null,
                         'price' => $var['price'] ?? null,
+                        'purchase_price' => $var['purchase_price'] ?? null,
                         'stock_quantity' => $var['stock_quantity'] ?? 0,
                         'media_id' => $var['media_id'] ?? null,
                     ]);

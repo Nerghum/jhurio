@@ -13,7 +13,14 @@ class OrderItem extends Model
         'product_name',
         'variation_name',
         'price',
+        'purchase_price',
         'quantity',
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'purchase_price' => 'decimal:2',
+        'quantity' => 'integer',
     ];
 
     public function order()

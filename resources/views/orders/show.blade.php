@@ -57,9 +57,28 @@
                 <p class="text-gray-600 dark:text-gray-300 mt-2"><span class="font-medium">Address:</span><br> {{ nl2br(e($order->shipping_address)) }}</p>
             </div>
             
-            <div class="mt-8 text-center">
-                <a href="{{ route('shop.index') }}" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-dark dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors">
-                    Continue Shopping
+            <!-- Auto-login & Account Notification -->
+            <div class="mt-8 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/5 rounded-2xl p-5 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 text-center sm:text-left">
+                    <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <i data-lucide="user-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white text-sm">Account Created & Logged In!</h4>
+                        <p class="text-xs text-gray-600 dark:text-gray-300">You are automatically logged in on this device. Track your order status, manage wishlist, or cancel if pending anytime.</p>
+                    </div>
+                </div>
+                <a href="{{ route('account.orders') }}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-secondary transition shadow-sm whitespace-nowrap w-full sm:w-auto">
+                    <i data-lucide="package" class="w-4 h-4"></i> Track in My Account
+                </a>
+            </div>
+            
+            <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="{{ route('account.orders') }}" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-primary hover:bg-secondary transition-all shadow-sm">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> View in Account Hub
+                </a>
+                <a href="{{ route('shop.index') }}" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> Continue Shopping
                 </a>
             </div>
         </div>

@@ -8,13 +8,13 @@
         <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80" alt="Shop Banner" class="w-full h-full object-cover opacity-40 mix-blend-multiply">
     </div>
     
-    <div class="relative max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">Discover Our Collection</h1>
-        <p class="mt-4 max-w-xl mx-auto text-xl text-gray-200">Shop the most authentic and premium items. Carefully curated for your lifestyle.</p>
+    <div class="relative max-w-7xl mx-auto py-10 px-4 sm:py-14 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Discover Our Collection</h1>
+        <p class="mt-2 sm:mt-3 max-w-xl mx-auto text-base sm:text-lg text-gray-200">Shop the most authentic and premium items. Carefully curated for your lifestyle.</p>
     </div>
 </div>
 
-<div class="bg-gray-50 dark:bg-gray-900 py-12" x-data="shopFilters()">
+<div class="bg-gray-50 dark:bg-gray-900 py-6 sm:py-8" x-data="shopFilters()">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="flex flex-col lg:flex-row gap-8">

@@ -51,14 +51,14 @@
                 <span>Dashboard</span>
             </a>
             
-            <!-- Catalog Group -->
+            <!-- Products Group -->
             @php $isCatalogActive = request()->routeIs('admin.products.*', 'admin.categories.*', 'admin.tags.*', 'admin.bundles.*', 'admin.reviews.*'); @endphp
             <div x-data="{ open: {{ $isCatalogActive ? 'true' : 'false' }} }" class="relative">
                  
                 <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isCatalogActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
                     <div class="flex items-center">
                         <i data-lucide="shopping-bag" class="w-5 h-5 mr-3 {{ $isCatalogActive ? 'text-primary' : '' }}"></i>
-                        <span>Catalog</span>
+                        <span>Products</span>
                     </div>
                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 {{ $isCatalogActive ? 'text-primary' : 'text-gray-400' }}" :class="{ 'rotate-180': open }"></i>
                 </div>
@@ -72,7 +72,10 @@
                      x-transition:leave-end="opacity-0 -translate-y-2"
                      class="pl-11 pr-4 py-2 space-y-1 mt-1 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
                     <a href="{{ route('admin.products.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.products.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
-                        Products
+                        All Products
+                    </a>
+                    <a href="{{ route('admin.stock.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.stock.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
+                        <span>Stock & Pricing</span>
                     </a>
                     <a href="{{ route('admin.categories.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.categories.*') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
                         Categories
@@ -92,6 +95,39 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Stock -->
+            @php $lowStockCountBadge = \App\Models\Product::where('stock_quantity', '<=', 5)->count(); @endphp
+            <a href="{{ route('admin.stock.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.stock.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="boxes" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.stock.*') ? 'text-primary' : '' }}"></i>
+                <span>Stock</span>
+                @if($lowStockCountBadge > 0)
+                    <span class="ml-auto bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" title="{{ $lowStockCountBadge }} low or out of stock items">{{ $lowStockCountBadge }}</span>
+                @endif
+            </a>
+
+            <!-- Orders -->
+            <a href="{{ route('admin.orders.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.orders.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="shopping-cart" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders.*') ? 'text-primary' : '' }}"></i>
+                <span>Orders</span>
+            </a>
+            
+            <a href="{{ route('admin.abandoned-carts.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.abandoned-carts.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="shopping-bag" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.abandoned-carts.*') ? 'text-primary' : '' }}"></i>
+                <span>Abandoned Carts</span>
+            </a>
+
+            <!-- Accounts -->
+            <a href="{{ route('admin.accounts.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.accounts.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="wallet" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.accounts.*') ? 'text-primary' : '' }}"></i>
+                <span>Accounts</span>
+            </a>
+
+            <!-- Media -->
+            <a href="{{ route('admin.media.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.media.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
+                <i data-lucide="image" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.media.*') ? 'text-primary' : '' }}"></i>
+                <span>Media Library</span>
+            </a>
             
             <!-- Storefront Group -->
             @php $isStorefrontActive = request()->routeIs('admin.banners.*', 'admin.featured_products.*', 'admin.homepage-builder.*'); @endphp
@@ -121,23 +157,6 @@
                     </a>
                 </div>
             </div>
-
-            <!-- Media -->
-            <a href="{{ route('admin.media.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.media.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
-                <i data-lucide="image" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.media.*') ? 'text-primary' : '' }}"></i>
-                <span>Media Library</span>
-            </a>
-            
-            <!-- Orders -->
-            <a href="{{ route('admin.orders.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.orders.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
-                <i data-lucide="shopping-cart" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders.*') ? 'text-primary' : '' }}"></i>
-                <span>Orders</span>
-            </a>
-            
-            <a href="{{ route('admin.abandoned-carts.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.abandoned-carts.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
-                <i data-lucide="shopping-bag" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.abandoned-carts.*') ? 'text-primary' : '' }}"></i>
-                <span>Abandoned Carts</span>
-            </a>
             
             <!-- Analytics Group -->
             @php $isAnalyticsActive = request()->routeIs('admin.customers.*', 'admin.analytics.*'); @endphp

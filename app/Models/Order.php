@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
+        'tracking_visitor_id',
+        'tracking_session_id',
+        'ip_address',
+        'user_agent',
         'user_id',
         'name',
         'phone',
@@ -37,5 +41,15 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function trackingVisitor()
+    {
+        return $this->belongsTo(TrackingVisitor::class, 'tracking_visitor_id', 'visitor_id');
+    }
+
+    public function trackingSession()
+    {
+        return $this->belongsTo(TrackingSession::class, 'tracking_session_id', 'session_id');
     }
 }

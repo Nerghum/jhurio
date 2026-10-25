@@ -11,7 +11,19 @@
             <!-- Main Content Area -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Basic Info -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-blue-100/80 dark:border-blue-900/40 border-t-4 border-t-blue-500">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">Basic Information</h3>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800">Essential</span>
+                    </div>
+
                     <div class="mb-4">
                         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Title</label>
                         <input type="text" name="name" id="name" x-model="name" @input="generateSlug()" required class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
@@ -20,10 +32,10 @@
                     <div class="mb-4">
                         <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Permalink</label>
                         <div class="flex rounded-xl shadow-sm">
-                            <span class="inline-flex items-center px-3 rounded-xl border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300">
+                            <span class="inline-flex items-center px-3 rounded-xl border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300 font-mono">
                                 {{ url('/') }}/product/
                             </span>
-                            <input type="text" name="slug" id="slug" x-model="slug" required class="flex-1 min-w-0 block w-full px-3 py-2 rounded-xl rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary sm:text-sm">
+                            <input type="text" name="slug" id="slug" x-model="slug" required class="flex-1 min-w-0 block w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary sm:text-sm font-mono">
                         </div>
                     </div>
 
@@ -46,10 +58,18 @@
                     </div>
                 </div>
 
-                                <!-- Options & Variations -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Options & Variations</h3>
+                <!-- Options & Variations -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-purple-100/80 dark:border-purple-900/40 border-t-4 border-t-purple-500">
+                    <div class="flex justify-between items-center pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <i data-lucide="layers" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">Options & Variations</h3>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800" x-text="variations.length + ' Variations'"></span>
                     </div>
 
                     <!-- Options Builder -->
@@ -147,19 +167,24 @@
                 </div>
 
                 <!-- Quantity Bundle Offers -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-emerald-100/80 dark:border-emerald-900/40 border-t-4 border-t-emerald-500">
                     <input type="hidden" name="bundle_settings" :value="JSON.stringify(bundle_settings)">
 
                     <!-- Card Header -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quantity Bundle Offers</h3>
-                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">বান্ডেল অফার</span>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
                             </div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Offer volume discounts (e.g. Buy 2 get 10% off, Buy 3 get ৳300 off) directly above checkout.
-                            </p>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Quantity Bundle Offers</h3>
+                                    <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800 px-2 py-0.5 rounded">বান্ডেল অফার</span>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Offer volume discounts (e.g. Buy 2 get 10% off, Buy 3 get ৳300 off) directly above checkout.
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Toggle Switch with Active Badge -->
@@ -387,21 +412,26 @@
                 </div>
 
                 <!-- Image & Text Story Sections -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-amber-100/80 dark:border-amber-900/40 border-t-4 border-t-amber-500">
                     <input type="hidden" name="image_text_sections" x-ref="imageTextSectionsInput" :value="JSON.stringify(image_text_sections)">
 
                     <!-- Card Header -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Image & Text Story Sections</h3>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-secondary" x-text="image_text_sections.length + ' Section' + (image_text_sections.length === 1 ? '' : 's')"></span>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                <i data-lucide="layout-template" class="w-4 h-4"></i>
                             </div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Add rich visual sections with flippable image/text layouts and custom placement anywhere on the product page.
-                            </p>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Image & Text Story Sections</h3>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" x-text="image_text_sections.length + ' Section' + (image_text_sections.length === 1 ? '' : 's')"></span>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Add rich visual sections with flippable image/text layouts and custom placement anywhere on the product page.
+                                </p>
+                            </div>
                         </div>
-                        <button type="button" @click="addImageTextSection()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-secondary transition shadow-sm self-start sm:self-center">
+                        <button type="button" @click="addImageTextSection()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shadow-sm self-start sm:self-center">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             <span>Add Story Section</span>
                         </button>
@@ -607,7 +637,7 @@
                 </div>
 
                 <!-- Video Reels Carousel (YouTube Shorts / Reels) -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-red-100/80 dark:border-red-900/40 border-t-4 border-t-red-500">
                     <input type="hidden" name="video_reels" x-ref="videoReelsInput" :value="JSON.stringify(video_reels)">
 
                     <!-- Card Header -->
@@ -764,8 +794,13 @@
             <!-- Sidebar -->
             <div class="space-y-6">
                 <!-- Publish Box -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Publish</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-emerald-100/80 dark:border-emerald-900/40 border-t-4 border-t-emerald-600">
+                    <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white">Publish Settings</h3>
+                    </div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                         <select name="status" class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
@@ -780,6 +815,11 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Price (BDT)</label>
                         <input type="number" step="0.01" name="price" value="{{ $product->price }}" class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Purchase / Cost Price (BDT)</label>
+                        <input type="number" step="0.01" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price ?? '0.00') }}" class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="0.00">
+                        <p class="text-xs text-gray-500 mt-1">Cost to acquire/produce. Used for profit & accounts calculation.</p>
                     </div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Compare at Price (BDT) (opt)</label>
@@ -835,8 +875,13 @@
                 </div>
 
                 <!-- Product Media -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Media</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-sky-100/80 dark:border-sky-900/40 border-t-4 border-t-sky-500">
+                    <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
+                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                            <i data-lucide="images" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white">Product Media</h3>
+                    </div>
                     
                     <!-- Thumbnail -->
                     <div class="mb-6">
@@ -883,11 +928,16 @@
                 </div>
 
                 <!-- Customer Reviews Summary & Quick Add -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-amber-100/80 dark:border-amber-900/40 border-t-4 border-t-amber-500 space-y-4">
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Customer Reviews</h3>
-                            <span class="text-xs text-gray-400">Total {{ $product->reviews->count() }} reviews ({{ $product->reviewsCount() }} active)</span>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                <i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">Customer Reviews</h3>
+                                <span class="text-xs text-gray-400">{{ $product->reviews->count() }} reviews ({{ $product->reviewsCount() }} active)</span>
+                            </div>
                         </div>
                         <a href="{{ route('admin.reviews.create', ['product_id' => $product->id]) }}" 
                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-xl hover:bg-secondary transition shadow-sm">

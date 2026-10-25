@@ -83,7 +83,7 @@
         </div>
         @endif
         @else
-        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div class="text-center py-12 sm:py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
             <div class="w-24 h-24 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-5">
                 <i data-lucide="heart" class="w-12 h-12 text-gray-400"></i>
             </div>

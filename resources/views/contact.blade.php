@@ -3,9 +3,9 @@
 @section('title', 'Contact Us')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     <div class="max-w-3xl mx-auto">
-        <div class="text-center mb-12">
+        <div class="text-center mb-6 sm:mb-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">Get in Touch</h1>
             <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
                 Have a question, feedback, or need assistance? We'd love to hear from you. Fill out the form below and our team will get back to you as soon as possible.
