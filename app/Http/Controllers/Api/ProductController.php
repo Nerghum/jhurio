@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Media;
 use App\Models\Category;
+use App\Models\Media;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -19,6 +19,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'purchase_price' => 'nullable|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'status' => 'nullable|in:draft,published,out_of_stock',
@@ -30,12 +31,12 @@ class ProductController extends Controller
         ]);
 
         $slug = Str::slug($validated['name']);
-        
+
         // Ensure unique slug
         $originalSlug = $slug;
         $counter = 1;
         while (Product::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 
@@ -43,6 +44,7 @@ class ProductController extends Controller
             'name' => $validated['name'],
             'slug' => $slug,
             'price' => $validated['price'],
+            'purchase_price' => $validated['purchase_price'] ?? null,
             'compare_at_price' => $validated['compare_at_price'] ?? null,
             'description' => $validated['description'] ?? '',
             'status' => $validated['status'] ?? 'published',
@@ -50,41 +52,42 @@ class ProductController extends Controller
         ]);
 
         // Attach categories
-        if (!empty($validated['categories'])) {
+        if (! empty($validated['categories'])) {
             $categoryIds = collect($validated['categories'])->map(function ($categoryName) {
                 $category = Category::firstOrCreate(
                     ['name' => $categoryName],
                     ['slug' => Str::slug($categoryName), 'is_active' => true]
                 );
+
                 return $category->id;
             })->toArray();
-            
+
             $product->categories()->sync($categoryIds);
         }
 
         // Process images
-        if (!empty($validated['image_urls'])) {
+        if (! empty($validated['image_urls'])) {
             $sortOrder = 0;
             foreach ($validated['image_urls'] as $index => $imageUrl) {
                 try {
                     $imageContent = Http::timeout(10)->get($imageUrl)->body();
-                    
+
                     if ($imageContent) {
                         // Extract extension or default to jpg
                         $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
-                        if (!$extension || !in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+                        if (! $extension || ! in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
                             $extension = 'jpg';
                         }
-                        
-                        $filename = 'product-' . $product->id . '-' . Str::random(10) . '.' . $extension;
-                        $path = 'media/' . $filename;
-                        
+
+                        $filename = 'product-'.$product->id.'-'.Str::random(10).'.'.$extension;
+                        $path = 'media/'.$filename;
+
                         Storage::disk('public')->put($path, $imageContent);
-                        
+
                         $media = Media::create([
                             'filename' => $filename,
                             'file_path' => $path,
-                            'file_type' => 'image/' . ($extension == 'jpg' ? 'jpeg' : $extension),
+                            'file_type' => 'image/'.($extension == 'jpg' ? 'jpeg' : $extension),
                             'file_size' => strlen($imageContent),
                         ]);
 
@@ -97,7 +100,7 @@ class ProductController extends Controller
                         $product->gallery()->attach($media->id, ['sort_order' => $sortOrder++]);
                     }
                 } catch (\Exception $e) {
-                    Log::error("Failed to download image for product API: " . $imageUrl . " - " . $e->getMessage());
+                    Log::error('Failed to download image for product API: '.$imageUrl.' - '.$e->getMessage());
                     // Continue with next image
                 }
             }
@@ -105,7 +108,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'Product created successfully',
-            'product' => $product->load('categories', 'thumbnail', 'gallery')
+            'product' => $product->load('categories', 'thumbnail', 'gallery'),
         ], 201);
     }
 }
