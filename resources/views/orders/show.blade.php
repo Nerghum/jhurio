@@ -108,72 +108,83 @@
              STATUS BANNER & CELEBRATION (Hidden on Print)
         ══════════════════════════════════════════════ -->
         @if($order->status !== 'cancelled')
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-[#0f4a0a] to-primary p-6 sm:p-8 text-white shadow-xl shadow-primary/10 border border-white/10 print:hidden">
-            <!-- Decorative background accents -->
-            <div class="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-secondary/20 blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-8 -bottom-8 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
-
+        <div class="relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 sm:p-8 border border-gray-100 dark:border-gray-700 shadow-sm print:hidden">
             <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div class="flex items-start gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center flex-shrink-0 shadow-inner">
-                        <i data-lucide="check-check" class="w-7 h-7 text-secondary"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center flex-shrink-0 text-emerald-600 dark:text-emerald-400 shadow-xs">
+                        <i data-lucide="check-check" class="w-7 h-7"></i>
                     </div>
                     <div>
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/25 border border-secondary/40 text-secondary text-xs font-bold uppercase tracking-wider mb-2">
-                            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             Order Confirmed
                         </div>
-                        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                             Thank you, {{ Str::title($order->name) }}!
                         </h2>
-                        <p class="text-sm text-gray-200 mt-1 max-w-xl leading-relaxed">
-                            Your order has been received and is being processed. We will contact you at <strong class="text-white">{{ $order->phone }}</strong> before dispatching your package.
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1.5 max-w-xl leading-relaxed">
+                            Your order has been received and is being processed. We will contact you at <strong class="text-gray-900 dark:text-white font-bold">{{ $order->phone }}</strong> before dispatching your package.
                         </p>
                     </div>
                 </div>
 
-                <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 border-white/15 pt-4 sm:pt-0">
-                    <span class="text-xs uppercase tracking-wider text-gray-300 font-semibold">Payment Status</span>
-                    <span class="text-lg font-black text-secondary flex items-center gap-1.5 mt-0.5">
+                <div class="flex sm:flex-col items-start sm:items-end justify-between sm:justify-center border-t sm:border-t-0 border-gray-100 dark:border-gray-700 pt-4 sm:pt-0">
+                    <span class="text-[11px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold">Payment Status</span>
+                    <span class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-0.5">
                         <i data-lucide="banknote" class="w-5 h-5"></i> Cash on Delivery
                     </span>
-                    <span class="text-xs text-gray-300">Pay ৳{{ number_format($order->total_amount, 0) }} on arrival</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Pay <strong class="text-gray-800 dark:text-gray-200">৳{{ number_format($order->total_amount, 0) }}</strong> on arrival</span>
                 </div>
             </div>
 
             <!-- Visual Progress Stepper -->
-            <div class="mt-8 pt-6 border-t border-white/15">
-                <div class="grid grid-cols-4 gap-2 sm:gap-4 relative">
+            <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                <div class="relative">
+                    <!-- Connecting Track Behind Steps -->
+                    <div class="hidden sm:block absolute top-5 left-12 right-12 h-1 bg-gray-100 dark:bg-gray-700 -z-0 rounded-full"></div>
                     @php
-                        $steps = [
-                            1 => ['name' => 'Order Placed', 'icon' => 'clipboard-check'],
-                            2 => ['name' => 'Processing',   'icon' => 'package'],
-                            3 => ['name' => 'Shipped',      'icon' => 'truck'],
-                            4 => ['name' => 'Delivered',    'icon' => 'home'],
-                        ];
+                        $stepperWidth = match($activeStep) {
+                            1 => '0%',
+                            2 => '33%',
+                            3 => '66%',
+                            4 => '100%',
+                            default => '0%',
+                        };
                     @endphp
+                    <div class="hidden sm:block absolute top-5 left-12 h-1 bg-emerald-500 -z-0 rounded-full transition-all duration-500" style="width: calc({{ $stepperWidth }} * 0.85)"></div>
 
-                    @foreach($steps as $sIndex => $step)
+                    <div class="grid grid-cols-4 gap-2 sm:gap-4 relative z-10">
                         @php
-                            $isComplete = $activeStep >= $sIndex;
-                            $isCurrent  = $activeStep === $sIndex;
+                            $steps = [
+                                1 => ['name' => 'Order Placed', 'icon' => 'clipboard-check'],
+                                2 => ['name' => 'Processing',   'icon' => 'package'],
+                                3 => ['name' => 'Shipped',      'icon' => 'truck'],
+                                4 => ['name' => 'Delivered',    'icon' => 'home'],
+                            ];
                         @endphp
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-300 {{ $isComplete ? 'bg-secondary text-primary font-bold shadow-lg shadow-secondary/30 scale-105' : 'bg-white/10 text-white/50 border border-white/20' }}">
-                                @if($isComplete && $activeStep > $sIndex)
-                                    <i data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                                @else
-                                    <i data-lucide="{{ $step['icon'] }}" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+
+                        @foreach($steps as $sIndex => $step)
+                            @php
+                                $isComplete = $activeStep >= $sIndex;
+                                $isCurrent  = $activeStep === $sIndex;
+                            @endphp
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-300 ring-4 ring-white dark:ring-gray-800 {{ $isComplete ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30 scale-105' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600' }}">
+                                    @if($isComplete && $activeStep > $sIndex)
+                                        <i data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                                    @else
+                                        <i data-lucide="{{ $step['icon'] }}" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                                    @endif
+                                </div>
+                                <span class="mt-2 text-[11px] sm:text-xs font-bold leading-tight {{ $isComplete ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500' }}">
+                                    {{ $step['name'] }}
+                                </span>
+                                @if($isCurrent)
+                                    <span class="inline-block text-[10px] text-emerald-700 dark:text-emerald-300 font-bold mt-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">Current Stage</span>
                                 @endif
                             </div>
-                            <span class="mt-2 text-[11px] sm:text-xs font-bold leading-tight {{ $isComplete ? 'text-white' : 'text-white/50' }}">
-                                {{ $step['name'] }}
-                            </span>
-                            @if($isCurrent)
-                                <span class="hidden sm:inline-block text-[10px] text-secondary font-semibold mt-0.5">Current Stage</span>
-                            @endif
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
