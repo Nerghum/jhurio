@@ -150,9 +150,19 @@
                 </div>
 
                 <!-- Description Snippet -->
-                <div class="text-base text-gray-600 dark:text-gray-300 mb-8 prose prose-sm dark:prose-invert">
+                @if($product->description || $product->content)
+                <div class="product-description-snippet rich-text-content text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 leading-relaxed
+                            [&_p]:mb-2.5 [&_p:last-child]:mb-0
+                            [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2.5 [&_ul]:space-y-1.5
+                            [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2.5 [&_ol]:space-y-1.5
+                            [&_li]:text-gray-700 dark:[&_li]:text-gray-300 [&_li]:leading-normal
+                            [&_strong]:font-bold [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                            [&_b]:font-bold [&_b]:text-gray-900 dark:[&_b]:text-white
+                            [&_em]:italic [&_u]:underline
+                            [&_a]:text-primary dark:[&_a]:text-secondary [&_a]:underline hover:[&_a]:opacity-80">
                     {!! $product->description ?: Str::limit(strip_tags($product->content), 150) !!}
                 </div>
+                @endif
 
                 <form class="mt-auto">
                     <!-- Dynamic Variations Selector -->
@@ -506,7 +516,7 @@
     <div class="mt-8 sm:mt-10 lg:mt-12 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8">
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Product Description</h2>
         <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm w-full overflow-hidden">
-            <div class="prose dark:prose-invert max-w-none w-full break-words overflow-x-auto">
+            <div class="prose dark:prose-invert rich-text-content max-w-none w-full break-words overflow-x-auto">
                 {!! $product->content !!}
             </div>
         </div>

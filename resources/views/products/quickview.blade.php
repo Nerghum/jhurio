@@ -42,7 +42,7 @@
                     <span x-text="Number(currentPrice).toFixed(0)"></span> BDT
                 </p>
                 <p class="text-lg text-gray-500 dark:text-gray-400 line-through mb-0.5" x-show="currentPrice === basePrice && {{ $product->compare_at_price ?: 0 }} > basePrice">
-                    {{ number_format($product->compare_at_price, 0) }} BDT
+                    {{ number_format($product->compare_at_price ?: 0, 0) }} BDT
                 </p>
                 <p class="text-lg text-gray-500 dark:text-gray-400 line-through mb-0.5" x-show="currentPrice < basePrice" x-text="Number(basePrice).toFixed(0) + ' BDT'"></p>
             </div>
@@ -54,9 +54,18 @@
                 </p>
             </div>
             
-            <div class="mt-4 line-clamp-3 text-sm text-gray-600 dark:text-gray-400 prose prose-sm dark:prose-invert">
-                {!! $product->description !!}
+            @if($product->description || $product->content)
+            <div class="mt-4 max-h-36 overflow-y-auto pr-1 text-sm text-gray-600 dark:text-gray-400 rich-text-content product-description-snippet
+                        [&_p]:mb-1.5 [&_p:last-child]:mb-0
+                        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1.5 [&_ul]:space-y-1
+                        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1.5 [&_ol]:space-y-1
+                        [&_strong]:font-bold [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                        [&_b]:font-bold [&_b]:text-gray-900 dark:[&_b]:text-white
+                        [&_em]:italic [&_u]:underline
+                        [&_a]:text-primary dark:[&_a]:text-secondary [&_a]:underline">
+                {!! $product->description ?: Str::limit(strip_tags($product->content), 150) !!}
             </div>
+            @endif
         </section>
 
         <section aria-labelledby="options-heading" class="mt-6 flex-1">

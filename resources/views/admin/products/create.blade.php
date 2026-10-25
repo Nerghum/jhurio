@@ -38,10 +38,19 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Short Description (Snippet)</label>
-                        <textarea name="description" id="description" rows="3" class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">{{ old('description') }}</textarea>
-                        <p class="text-xs text-gray-500 mt-1">This text appears right below the price on the product page. Keep it concise.</p>
+                    <div class="mb-4" x-data="quillEditor()">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Short Description (Snippet)</label>
+                            <span class="text-[11px] text-gray-400 font-medium">Rich Text &bull; Appears below price</span>
+                        </div>
+                        <div class="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
+                            <!-- Quill Editor Area -->
+                            <div x-ref="quillContainer" class="min-h-[140px] text-gray-900 dark:text-white">{!! old('description') !!}</div>
+                            
+                            <!-- Hidden input -->
+                            <input type="hidden" name="description" x-ref="hiddenInput" value="{{ old('description') }}">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">This snippet appears right below the price on the product page. Supports bullet points, bold text, links, and formatting.</p>
                     </div>
 
                     <div class="mb-4" x-data="quillEditor()">
@@ -52,7 +61,7 @@
                             <div x-ref="quillContainer" class="min-h-[300px] text-gray-900 dark:text-white">{!! old('content') !!}</div>
                             
                             <!-- Hidden input -->
-                            <input type="hidden" name="content" x-ref="hiddenInput" value="">
+                            <input type="hidden" name="content" x-ref="hiddenInput" value="{{ old('content') }}">
                         </div>
                     </div>
                 </div>
@@ -1029,11 +1038,21 @@
                     }
                 });
                 
-                this.$refs.hiddenInput.value = this.quill.root.innerHTML;
+                this.$refs.quillContainer.__quill = this.quill;
+                this.syncValue();
 
                 this.quill.on('text-change', () => {
-                    this.$refs.hiddenInput.value = this.quill.root.innerHTML;
+                    this.syncValue();
                 });
+
+                const form = this.$refs.hiddenInput ? this.$refs.hiddenInput.closest('form') : null;
+                if (form) {
+                    form.addEventListener('submit', () => this.syncValue());
+                }
+            },
+            syncValue() {
+                const isBlank = this.quill.getText().trim().length === 0 && !this.quill.root.querySelector('img');
+                this.$refs.hiddenInput.value = isBlank ? '' : this.quill.root.innerHTML;
             }
         }));
 
