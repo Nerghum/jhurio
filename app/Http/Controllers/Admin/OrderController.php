@@ -190,12 +190,18 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => ['required', 'in:'.implode(',', array_keys(self::STATUSES))],
+            'note' => ['nullable', 'string', 'max:1000', 'required_if:status,cancelled'],
+        ], [
+            'note.required_if' => 'A cancellation reason / note is mandatory when cancelling an order.',
         ]);
 
-        if ($order->status !== $request->status) {
+        $statusChanged = $order->status !== $request->status;
+        $hasNote = ! empty($request->note);
+
+        if ($statusChanged || $hasNote) {
             $order->update(['status' => $request->status]);
 
-            // Log the change
+            // Log the change with note
             $order->logs()->create([
                 'status' => $request->status,
                 'note' => $request->note ?? null,
@@ -206,7 +212,9 @@ class OrderController extends Controller
             return response()->json(['success' => true]);
         }
 
-        return back()->with('success', 'Status updated to '.self::STATUSES[$request->status]['label']);
+        $label = self::STATUSES[$request->status]['label'] ?? $request->status;
+
+        return back()->with('success', "Order status successfully updated to {$label}.");
     }
 
     public function invoice(Order $order)

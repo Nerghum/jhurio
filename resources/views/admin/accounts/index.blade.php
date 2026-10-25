@@ -56,41 +56,40 @@
             </div>
 
             <!-- Custom Filter Controls Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 pt-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 pt-1">
                 <!-- Start Date -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">From Date</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">From Date</label>
                     <input type="date" name="start_date" x-model="startDate"
-                           class="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                           class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary shadow-2xs">
                 </div>
 
                 <!-- End Date -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">To Date</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">To Date</label>
                     <input type="date" name="end_date" x-model="endDate"
-                           class="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                           class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary shadow-2xs">
                 </div>
 
                 <!-- Product Filter (Multi / Custom Select) -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">Filter by Product</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">Filter by Product</label>
                     <select name="product_ids[]" multiple
-                            class="w-full px-3 py-1.5 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary custom-scrollbar"
-                            style="height: 42px;">
+                            class="w-full px-3.5 py-1.5 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary shadow-2xs custom-scrollbar"
+                            style="height: 44px;">
                         @foreach($allProducts as $p)
                             <option value="{{ $p->id }}" {{ in_array($p->id, $productIds ?? []) ? 'selected' : '' }}>
                                 {{ $p->name }}
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Hold Ctrl/Cmd to select multiple products</p>
                 </div>
 
                 <!-- Order Status Filter -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1">Order Status</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">Order Status</label>
                     <select name="status"
-                            class="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                            class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary shadow-2xs">
                         <option value="valid" {{ $status === 'valid' ? 'selected' : '' }}>Valid Sales (Non-Cancelled)</option>
                         <option value="delivered" {{ $status === 'delivered' ? 'selected' : '' }}>Delivered Only</option>
                         <option value="shipped" {{ $status === 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -99,18 +98,21 @@
                         <option value="all" {{ $status === 'all' ? 'selected' : '' }}>All Statuses (inc. Cancelled)</option>
                     </select>
                 </div>
+            </div>
 
-                <!-- Search / Buttons -->
-                <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+            <!-- Filter Action Bar (Buttons & Helper) -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+                <span class="text-xs text-gray-400 dark:text-gray-500">Tip: Hold Ctrl/Cmd to select multiple products</span>
+                <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                    @if(request()->hasAny(['range', 'start_date', 'end_date', 'product_ids', 'status', 'search']))
+                        <a href="{{ route('admin.accounts.index') }}" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-xl transition-colors">
+                            Reset Filters
+                        </a>
+                    @endif
+                    <button type="submit" class="flex-1 sm:flex-none px-6 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
                         <i data-lucide="filter" class="w-4 h-4"></i>
                         <span>Apply Filters</span>
                     </button>
-                    @if(request()->hasAny(['range', 'start_date', 'end_date', 'product_ids', 'status', 'search']))
-                        <a href="{{ route('admin.accounts.index') }}" class="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl transition-colors">
-                            Reset
-                        </a>
-                    @endif
                 </div>
             </div>
 
@@ -132,9 +134,9 @@
     </div>
 
     <!-- ═════════ PRIMARY FINANCIAL KPI CARDS ═════════ -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <!-- Gross Revenue -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-emerald-100 dark:border-emerald-900/30 shadow-sm relative overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-emerald-100 dark:border-emerald-900/30 shadow-sm relative overflow-hidden">
             <div class="absolute -right-3 -bottom-3 w-20 h-20 bg-emerald-500/5 rounded-full pointer-events-none"></div>
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Total Revenue</span>
@@ -153,7 +155,7 @@
         </div>
 
         <!-- Cost of Goods Sold (COGS) -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-purple-100 dark:border-purple-900/30 shadow-sm relative overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-purple-100 dark:border-purple-900/30 shadow-sm relative overflow-hidden">
             <div class="absolute -right-3 -bottom-3 w-20 h-20 bg-purple-500/5 rounded-full pointer-events-none"></div>
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-400">Cost of Goods (COGS)</span>
@@ -170,7 +172,7 @@
         </div>
 
         <!-- Net Profit -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-blue-100 dark:border-blue-900/30 shadow-sm relative overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-blue-100 dark:border-blue-900/30 shadow-sm relative overflow-hidden">
             <div class="absolute -right-3 -bottom-3 w-20 h-20 bg-blue-500/5 rounded-full pointer-events-none"></div>
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">Gross Profit</span>
@@ -188,7 +190,7 @@
         </div>
 
         <!-- Average Order Value (AOV) -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/80 shadow-sm relative overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700/80 shadow-sm relative overflow-hidden">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Average Order Value</span>
                 <span class="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">

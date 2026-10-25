@@ -249,4 +249,35 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
+
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'product_ids' => 'required|array|min:1',
+            'product_ids.*' => 'exists:products,id',
+            'action' => 'required|in:published,draft,delete',
+        ]);
+
+        $count = count($validated['product_ids']);
+
+        if ($validated['action'] === 'published') {
+            Product::whereIn('id', $validated['product_ids'])->update(['status' => 'published']);
+
+            return back()->with('success', "{$count} product(s) successfully marked as Live (Published).");
+        }
+
+        if ($validated['action'] === 'draft') {
+            Product::whereIn('id', $validated['product_ids'])->update(['status' => 'draft']);
+
+            return back()->with('success', "{$count} product(s) successfully marked as Draft.");
+        }
+
+        if ($validated['action'] === 'delete') {
+            Product::whereIn('id', $validated['product_ids'])->delete();
+
+            return back()->with('success', "{$count} product(s) successfully deleted.");
+        }
+
+        return back();
+    }
 }

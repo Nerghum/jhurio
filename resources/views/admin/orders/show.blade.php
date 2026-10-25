@@ -137,21 +137,7 @@
             </span>
         </div>
 
-        {{-- Status quick updater --}}
-        <form action="{{ route('admin.orders.update_status', $order) }}" method="POST" class="flex items-center gap-2">
-            @csrf
-            @method('PATCH')
-            <div class="relative">
-                <select name="status" onchange="this.form.submit()" class="text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2 pr-8 focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
-                    @foreach($statuses as $key => $status)
-                        <option value="{{ $key }}" {{ $order->status === $key ? 'selected' : '' }}>
-                            Status: {{ $status['label'] }}
-                        </option>
-                    @endforeach
-                </select>
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-            </div>
-        </form>
+
     </div>
 
     {{-- ══════════════════════════════════════════════════════════════════
@@ -693,9 +679,129 @@
         </div>{{-- End xl:col-span-8 --}}
 
         {{-- ══════════════════════════════════════════════════════════════════
-             RIGHT COLUMN: VISITOR & TRACKING DATA SIDECARD (4 cols on XL)
+             RIGHT COLUMN: STATUS UPDATER & TRACKING DATA SIDEBAR (4 cols on XL)
              ══════════════════════════════════════════════════════════════════ --}}
         <div class="xl:col-span-4 space-y-6 print:hidden">
+
+            <!-- ══════════════════════════════════════════════════════════════
+                 1. ORDER STATUS & ACTIONS CARD (Sidebar Top)
+                 ══════════════════════════════════════════════════════════════ -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200/90 dark:border-gray-700 shadow-xl overflow-hidden"
+                 x-data="{
+                     newStatus: '{{ $order->status }}',
+                     statusNote: '',
+                     get isCancelled() {
+                         return this.newStatus === 'cancelled';
+                     }
+                 }">
+                
+                <div class="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700/80 bg-gradient-to-r from-gray-50 to-primary/5 dark:from-gray-800 dark:to-gray-800/80 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Change Status</h3>
+                            <p class="text-[11px] text-gray-400">Order workflow & note</p>
+                        </div>
+                    </div>
+                    @php $currColor = $statuses[$order->status]['color'] ?? 'gray'; @endphp
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-{{ $currColor }}-50 text-{{ $currColor }}-700 dark:bg-{{ $currColor }}-900/30 dark:text-{{ $currColor }}-400 border border-{{ $currColor }}-200 dark:border-{{ $currColor }}-800">
+                        <span class="w-1.5 h-1.5 rounded-full bg-{{ $currColor }}-500"></span>
+                        {{ $statuses[$order->status]['label'] ?? Str::headline($order->status) }}
+                    </span>
+                </div>
+
+                <form action="{{ route('admin.orders.update_status', $order) }}" method="POST" class="p-5 space-y-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <!-- Status Select Dropdown -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
+                            Order Status
+                        </label>
+                        <div class="relative">
+                            <select name="status" 
+                                    x-model="newStatus" 
+                                    class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent appearance-none cursor-pointer pr-9 shadow-2xs">
+                                @foreach($statuses as $key => $status)
+                                    <option value="{{ $key }}" {{ $order->status === $key ? 'selected' : '' }}>
+                                        {{ $status['label'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Status Note (Optional normally, MANDATORY if Cancelled) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                Status Note
+                                <template x-if="isCancelled">
+                                    <span class="text-rose-600 font-black ml-1 text-xs">* (Required)</span>
+                                </template>
+                                <template x-if="!isCancelled">
+                                    <span class="text-gray-400 font-normal text-[11px] ml-1">(Optional)</span>
+                                </template>
+                            </label>
+                        </div>
+
+                        <textarea name="note" 
+                                  x-model="statusNote"
+                                  :required="isCancelled"
+                                  :placeholder="isCancelled ? 'Please specify reason for cancellation (Mandatory)...' : 'Add an internal note or reason for this status change (optional)...'"
+                                  rows="3" 
+                                  class="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400 shadow-2xs transition"
+                                  :class="isCancelled && !statusNote.trim() ? 'border-rose-300 focus:ring-rose-500 bg-rose-50/20' : ''"></textarea>
+
+                        <!-- Cancellation Notice -->
+                        <div x-show="isCancelled" x-cloak class="mt-2 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-[11px] text-rose-700 dark:text-rose-300 flex items-start gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-500"></i>
+                            <span>Cancellation reason is mandatory and will be saved in the permanent audit history.</span>
+                        </div>
+                    </div>
+
+                    <!-- Update Status Button -->
+                    <button type="submit" 
+                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white transition shadow-sm hover:scale-[1.01] active:scale-[0.99]"
+                            :class="isCancelled ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20' : 'bg-primary hover:bg-secondary shadow-primary/20'">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Update Order Status</span>
+                    </button>
+                </form>
+
+                <!-- Recent Status Activity Log -->
+                @if($order->logs && $order->logs->count() > 0)
+                <div class="px-5 pb-5 pt-3 border-t border-gray-100 dark:border-gray-700/80">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 flex items-center justify-between">
+                        <span>Recent Status History</span>
+                        <span class="text-[10px] text-gray-400 font-normal">{{ $order->logs->count() }} total</span>
+                    </div>
+                    <div class="space-y-2 max-h-44 overflow-y-auto custom-scrollbar pr-1">
+                        @foreach($order->logs->take(4) as $log)
+                            <div class="text-[11px] p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
+                                <div class="flex items-center justify-between font-bold text-gray-800 dark:text-gray-200">
+                                    <span class="capitalize">{{ $log->status }}</span>
+                                    <span class="text-[10px] text-gray-400 font-normal">{{ $log->created_at->diffForHumans() }}</span>
+                                </div>
+                                @if($log->note)
+                                    <p class="text-[10px] text-gray-600 dark:text-gray-300 mt-1 italic leading-relaxed">
+                                        "{{ $log->note }}"
+                                    </p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════════
+                 2. VISITOR & TRACKING DATA SIDECARD (Under Status Card)
+                 ══════════════════════════════════════════════════════════════ -->
             <div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200/90 dark:border-gray-700 shadow-xl overflow-hidden">
                 {{-- Sidecard Header --}}
                 <div class="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700/80 bg-gradient-to-r from-gray-50 to-primary/5 dark:from-gray-800 dark:to-gray-800/80 flex items-center justify-between">

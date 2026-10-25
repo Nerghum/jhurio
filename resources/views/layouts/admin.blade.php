@@ -262,6 +262,14 @@
                     <a href="{{ route('admin.settings.marketing') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.marketing') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
                         Marketing & Popups
                     </a>
+                    @if(auth()->check() && auth()->user()->isSuperAdmin())
+                    <a href="{{ route('admin.settings.site_reset') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.settings.site_reset*') ? 'text-rose-600 font-bold bg-rose-50 dark:bg-rose-950/40 shadow-sm' : 'text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-semibold' }}">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="flame" class="w-3.5 h-3.5 text-rose-500"></i>
+                            <span>Factory Site Reset</span>
+                        </span>
+                    </a>
+                    @endif
                 </div>
             </div>
         </nav>
@@ -294,7 +302,7 @@
         </header>
 
         <!-- Page Content -->
-        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
             @yield('content')
         </main>
     </div>

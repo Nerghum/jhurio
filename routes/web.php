@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ProductBundleController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SiteResetController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\UserController;
@@ -108,6 +109,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
 
         // Products, Categories, Tags, Reviews
+        Route::post('products/bulk-action', [ProductController::class, 'bulkAction'])->name('products.bulkAction');
         Route::resource('products', ProductController::class);
         Route::resource('categories', CategoryController::class);
         Route::resource('tags', TagController::class);
@@ -176,6 +178,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::get('/marketing', [SettingController::class, 'marketing'])->name('marketing');
             Route::post('/marketing', [SettingController::class, 'updateMarketing'])->name('marketing.update');
+
+            // Factory Site Reset (Superadmin only)
+            Route::get('/site-reset', [SiteResetController::class, 'index'])->name('site_reset');
+            Route::post('/site-reset', [SiteResetController::class, 'reset'])->name('site_reset.execute');
         });
 
         Route::resource('delivery-methods', DeliveryMethodController::class)->except(['create', 'show', 'edit']);
