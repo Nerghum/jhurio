@@ -958,6 +958,60 @@
 </style>
 <script>
     document.addEventListener('alpine:init', () => {
+        if (typeof Quill !== 'undefined') {
+            const Clipboard = Quill.import('modules/clipboard');
+            const Delta = Quill.import('delta');
+
+            class SafeClipboard extends Clipboard {
+                onCapturePaste(e) {
+                    if (e.defaultPrevented || !this.quill.isEnabled()) return;
+                    if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+                        return super.onCapturePaste(e);
+                    }
+                    e.preventDefault();
+                    const text = e.clipboardData ? e.clipboardData.getData('text/plain') : '';
+                    if (!text) return;
+                    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                    const range = this.quill.getSelection(true);
+                    const index = range ? range.index : this.quill.getLength();
+                    if (range && range.length > 0) {
+                        this.quill.deleteText(range.index, range.length, 'user');
+                    }
+                    this.quill.insertText(index, normalized, 'user');
+                    this.quill.setSelection(index + normalized.length, 0, 'silent');
+                }
+            }
+            Quill.register('modules/clipboard', SafeClipboard, true);
+        }
+
+        function attachSafePaste(quill, onSync) {
+            if (!quill || !quill.root) return;
+            quill.root.setAttribute('data-gramm', 'false');
+            quill.root.setAttribute('data-enable-grammarly', 'false');
+
+            quill.root.addEventListener('paste', function(e) {
+                if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const text = clipboardData ? clipboardData.getData('text/plain') : '';
+                if (!text) return;
+                const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                const range = quill.getSelection(true);
+                const index = range ? range.index : quill.getLength();
+                if (range && range.length > 0) {
+                    quill.deleteText(range.index, range.length, 'user');
+                }
+                quill.insertText(index, normalized, 'user');
+                quill.setSelection(index + normalized.length, 0, 'silent');
+                if (typeof onSync === 'function') {
+                    onSync();
+                }
+            }, true);
+        }
+
         Alpine.data('sectionQuill', (section) => ({
             quill: null,
             init() {
@@ -997,6 +1051,12 @@
                     if (section && section.content) {
                         this.quill.root.innerHTML = section.content;
                     }
+
+                    attachSafePaste(this.quill, () => {
+                        if (section) {
+                            section.content = this.quill.root.innerHTML;
+                        }
+                    });
 
                     this.quill.on('text-change', () => {
                         if (section) {
@@ -1040,6 +1100,7 @@
                 
                 this.$refs.quillContainer.__quill = this.quill;
                 this.syncValue();
+                attachSafePaste(this.quill, () => this.syncValue());
 
                 this.quill.on('text-change', () => {
                     this.syncValue();
