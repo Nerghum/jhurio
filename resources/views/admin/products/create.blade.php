@@ -45,7 +45,7 @@
                         </div>
                         <div class="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
                             <!-- Quill Editor Area -->
-                            <div x-ref="quillContainer" class="min-h-[140px] text-gray-900 dark:text-white">{!! old('description') !!}</div>
+                            <div x-ref="quillContainer" class="min-h-[140px] text-gray-900 dark:text-white" lang="bn" spellcheck="false">{!! old('description') !!}</div>
                             
                             <!-- Hidden input -->
                             <input type="hidden" name="description" x-ref="hiddenInput" value="{{ old('description') }}">
@@ -58,7 +58,7 @@
                         
                         <div class="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
                             <!-- Quill Editor Area -->
-                            <div x-ref="quillContainer" class="min-h-[300px] text-gray-900 dark:text-white">{!! old('content') !!}</div>
+                            <div x-ref="quillContainer" class="min-h-[300px] text-gray-900 dark:text-white" lang="bn" spellcheck="false">{!! old('content') !!}</div>
                             
                             <!-- Hidden input -->
                             <input type="hidden" name="content" x-ref="hiddenInput" value="{{ old('content') }}">
@@ -943,10 +943,31 @@
 @endsection
 
 @push('scripts')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script src="https://unpkg.com/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
 <style>
+    .ql-container {
+        font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
+        font-size: 15px;
+    }
+    .ql-editor {
+        font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
+        font-size: 15px;
+        line-height: 1.85 !important;
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
+        font-feature-settings: "kern" 1, "liga" 1;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+    .ql-editor p {
+        margin-bottom: 0.5rem;
+        line-height: 1.85;
+    }
     .ql-editor ul { list-style-type: disc; padding-left: 1.5em; }
     .ql-editor ol { list-style-type: decimal; padding-left: 1.5em; }
     .dark .ql-toolbar.ql-snow { border-color: #4b5563; background-color: #1f2937; }
@@ -988,6 +1009,8 @@
             if (!quill || !quill.root) return;
             quill.root.setAttribute('data-gramm', 'false');
             quill.root.setAttribute('data-enable-grammarly', 'false');
+            quill.root.setAttribute('spellcheck', 'false');
+            quill.root.setAttribute('lang', 'bn');
 
             quill.root.addEventListener('paste', function(e) {
                 if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
@@ -1058,8 +1081,19 @@
                         }
                     });
 
-                    this.quill.on('text-change', () => {
+                    let isComposing = false;
+                    this.quill.root.addEventListener('compositionstart', () => {
+                        isComposing = true;
+                    });
+                    this.quill.root.addEventListener('compositionend', () => {
+                        isComposing = false;
                         if (section) {
+                            section.content = this.quill.root.innerHTML;
+                        }
+                    });
+
+                    this.quill.on('text-change', () => {
+                        if (!isComposing && section) {
                             section.content = this.quill.root.innerHTML;
                         }
                     });
@@ -1102,8 +1136,19 @@
                 this.syncValue();
                 attachSafePaste(this.quill, () => this.syncValue());
 
-                this.quill.on('text-change', () => {
+                let isComposing = false;
+                this.quill.root.addEventListener('compositionstart', () => {
+                    isComposing = true;
+                });
+                this.quill.root.addEventListener('compositionend', () => {
+                    isComposing = false;
                     this.syncValue();
+                });
+
+                this.quill.on('text-change', () => {
+                    if (!isComposing) {
+                        this.syncValue();
+                    }
                 });
 
                 const form = this.$refs.hiddenInput ? this.$refs.hiddenInput.closest('form') : null;
