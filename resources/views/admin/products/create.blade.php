@@ -38,30 +38,21 @@
                         </div>
                     </div>
 
-                    <div class="mb-4" x-data="quillEditor()">
+                    <div class="mb-4">
                         <div class="flex items-center justify-between mb-1.5">
                             <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Short Description (Snippet)</label>
                             <span class="text-[11px] text-gray-400 font-medium">Rich Text &bull; Appears below price</span>
                         </div>
                         <div class="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
-                            <!-- Quill Editor Area -->
-                            <div x-ref="quillContainer" class="min-h-[140px] text-gray-900 dark:text-white" lang="bn" spellcheck="false">{!! old('description') !!}</div>
-                            
-                            <!-- Hidden input -->
-                            <input type="hidden" name="description" x-ref="hiddenInput" value="{{ old('description') }}">
+                            <textarea id="description" name="description" rows="5" class="w-full text-sm block border-0 p-3 focus:ring-0 text-gray-900 dark:text-white dark:bg-gray-800" placeholder="Short description / key highlights...">{!! old('description') !!}</textarea>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">This snippet appears right below the price on the product page. Supports bullet points, bold text, links, and formatting.</p>
                     </div>
 
-                    <div class="mb-4" x-data="quillEditor()">
+                    <div class="mb-4">
                         <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                        
                         <div class="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
-                            <!-- Quill Editor Area -->
-                            <div x-ref="quillContainer" class="min-h-[300px] text-gray-900 dark:text-white" lang="bn" spellcheck="false">{!! old('content') !!}</div>
-                            
-                            <!-- Hidden input -->
-                            <input type="hidden" name="content" x-ref="hiddenInput" value="{{ old('content') }}">
+                            <textarea id="content" name="content" rows="12" class="w-full text-sm block border-0 p-3 focus:ring-0 text-gray-900 dark:text-white dark:bg-gray-800" placeholder="Detailed product story, features, benefits, specifications...">{!! old('content') !!}</textarea>
                         </div>
                     </div>
                 </div>
@@ -509,15 +500,15 @@
                                                    class="w-full px-3.5 py-2 text-xs font-medium rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
                                         </div>
 
-                                        <div x-data="sectionQuill(section)">
+                                        <div x-data="sectionEditor(section)">
                                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                                 Content / Story Description
                                             </label>
-                                            <div class="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
-                                                <div x-ref="editor" 
-                                                     data-section-quill
-                                                     :data-section-id="section.id"
-                                                     class="min-h-[170px] text-gray-900 dark:text-white"></div>
+                                            <div class="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
+                                                <textarea :id="'section_editor_' + section.id" 
+                                                          class="w-full text-sm block border-0 p-3 focus:ring-0 text-gray-900 dark:text-white dark:bg-gray-800"
+                                                          rows="5"
+                                                          x-text="section.content"></textarea>
                                             </div>
                                         </div>
 
@@ -946,305 +937,181 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-<script src="https://unpkg.com/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 <style>
-    .ql-container {
-        font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
-        font-size: 15px;
+    .tox-tinymce {
+        border-radius: 0.75rem !important;
+        border-color: #e5e7eb !important;
     }
-    .ql-editor {
-        font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
-        font-size: 15px;
-        line-height: 1.85 !important;
-        word-break: normal !important;
-        overflow-wrap: break-word !important;
-        font-feature-settings: "kern" 1, "liga" 1;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
+    .dark .tox-tinymce {
+        border-color: #4b5563 !important;
     }
-    .ql-editor p {
-        margin-bottom: 0.5rem;
-        line-height: 1.85;
+    .tox .tox-toolbar-overlord,
+    .tox .tox-toolbar,
+    .tox .tox-toolbar__primary {
+        background: transparent !important;
     }
-    .ql-editor ul { list-style-type: disc; padding-left: 1.5em; }
-    .ql-editor ol { list-style-type: decimal; padding-left: 1.5em; }
-    .dark .ql-toolbar.ql-snow { border-color: #4b5563; background-color: #1f2937; }
-    .dark .ql-container.ql-snow { border-color: #4b5563; background-color: #111827; }
-    .dark .ql-snow .ql-stroke { stroke: #e5e7eb; }
-    .dark .ql-snow .ql-fill { fill: #e5e7eb; }
-    .dark .ql-snow .ql-picker { color: #e5e7eb; }
-    .dark .ql-snow .ql-picker-options { background-color: #1f2937; border-color: #4b5563; }
 </style>
 <script>
-    document.addEventListener('alpine:init', () => {
-        if (typeof Quill !== 'undefined') {
-            const icons = Quill.import('ui/icons');
-            if (icons) {
-                icons['undo'] = '<svg viewBox="0 0 18 18"><polygon class="ql-fill ql-stroke" points="6 10 4 12 2 10 6 10"></polygon><path class="ql-stroke" d="M4,12V8A4,4,0,0,1,8,4h6"></path></svg>';
-                icons['redo'] = '<svg viewBox="0 0 18 18"><polygon class="ql-fill ql-stroke" points="12 10 14 12 16 10 12 10"></polygon><path class="ql-stroke" d="M14,12V8A4,4,0,0,0,10,4H4"></path></svg>';
-            }
-
-            const Clipboard = Quill.import('modules/clipboard');
-            const Delta = Quill.import('delta');
-
-            class SafeClipboard extends Clipboard {
-                onCapturePaste(e) {
-                    if (e.defaultPrevented || !this.quill.isEnabled()) return;
-                    if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
-                        return super.onCapturePaste(e);
-                    }
-                    e.preventDefault();
-                    const text = e.clipboardData ? e.clipboardData.getData('text/plain') : '';
-                    if (!text) return;
-                    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-                    const range = this.quill.getSelection(true);
-                    const index = range ? range.index : this.quill.getLength();
-                    if (range && range.length > 0) {
-                        this.quill.deleteText(range.index, range.length, 'user');
-                    }
-                    this.quill.insertText(index, normalized, 'user');
-                    this.quill.setSelection(index + normalized.length, 0, 'silent');
+    function getTinyMCEConfig(selector, customOptions = {}) {
+        const isDark = document.documentElement.classList.contains('dark') || 
+                       (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        
+        return {
+            selector: selector,
+            base_url: 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3',
+            suffix: '.min',
+            height: customOptions.height || 360,
+            menubar: false,
+            branding: false,
+            promotion: false,
+            statusbar: true,
+            entity_encoding: 'raw',
+            convert_urls: false,
+            relative_urls: false,
+            remove_script_host: false,
+            skin: isDark ? 'oxide-dark' : 'oxide',
+            content_css: isDark ? 'dark' : 'default',
+            plugins: 'advlist autolink lists link image table code fullscreen wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | link media_library image table | removeformat code fullscreen',
+            font_family_formats: 'Hind Siliguri=Hind Siliguri,sans-serif; Noto Sans Bengali=Noto Sans Bengali,sans-serif; Inter=Inter,sans-serif; Outfit=Outfit,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times;',
+            content_style: `
+                @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+                body {
+                    font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-size: 15px;
+                    line-height: 1.85;
+                    color: ${isDark ? '#e5e7eb' : '#1f2937'};
+                    background-color: ${isDark ? '#111827' : '#ffffff'};
+                    padding: 12px 14px;
+                    word-break: normal;
+                    overflow-wrap: break-word;
+                    -webkit-font-smoothing: antialiased;
+                    text-rendering: optimizeLegibility;
                 }
-            }
-            Quill.register('modules/clipboard', SafeClipboard, true);
-        }
+                p { margin: 0 0 0.75rem 0; line-height: 1.85; }
+                h1, h2, h3, h4, h5, h6 { font-family: inherit; font-weight: 600; line-height: 1.35; margin-top: 1rem; margin-bottom: 0.5rem; }
+                ul, ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+                li { line-height: 1.85; }
+                img { max-width: 100%; height: auto; border-radius: 8px; }
+                table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+                th, td { border: 1px solid ${isDark ? '#374151' : '#e5e7eb'}; padding: 8px 12px; }
+                a { color: #22c55e; text-decoration: underline; }
+            `,
+            setup: function(editor) {
+                editor.ui.registry.addIcon('media-folder', '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path><circle cx="12" cy="13" r="3"></circle></svg>');
 
-        function attachSafePaste(quill, onSync) {
-            if (!quill || !quill.root) return;
-            quill.root.setAttribute('data-gramm', 'false');
-            quill.root.setAttribute('data-enable-grammarly', 'false');
-            quill.root.setAttribute('spellcheck', 'false');
-            quill.root.setAttribute('lang', 'bn');
-
-            quill.root.addEventListener('paste', function(e) {
-                if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
-                    return;
-                }
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                const clipboardData = e.clipboardData || window.clipboardData;
-                const text = clipboardData ? clipboardData.getData('text/plain') : '';
-                if (!text) return;
-                const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-                const range = quill.getSelection(true);
-                const index = range ? range.index : quill.getLength();
-                if (range && range.length > 0) {
-                    quill.deleteText(range.index, range.length, 'user');
-                }
-                quill.insertText(index, normalized, 'user');
-                quill.setSelection(index + normalized.length, 0, 'silent');
-                if (typeof onSync === 'function') {
-                    onSync();
-                }
-            }, true);
-        }
-
-        function attachUndoRedo(quill) {
-            if (!quill || !quill.root) return;
-
-            quill.root.addEventListener('keydown', function(e) {
-                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-                const isShortKey = isMac ? e.metaKey : e.ctrlKey;
-
-                if (isShortKey) {
-                    const isZ = e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ' || e.keyCode === 90 || e.which === 90;
-                    const isY = e.key === 'y' || e.key === 'Y' || e.code === 'KeyY' || e.keyCode === 89 || e.which === 89;
-
-                    // Undo: (Cmd+Z or Ctrl+Z) without Shift
-                    if (isZ && !e.shiftKey) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (quill.history) {
-                            quill.history.undo();
-                        }
-                        return;
-                    }
-
-                    // Redo: (Cmd+Shift+Z or Ctrl+Shift+Z or Ctrl+Y)
-                    if ((isZ && e.shiftKey) || isY) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (quill.history) {
-                            quill.history.redo();
-                        }
-                        return;
-                    }
-                }
-            }, true);
-        }
-
-        Alpine.data('sectionQuill', (section) => ({
-            quill: null,
-            init() {
-                this.$nextTick(() => {
-                    if (!this.$refs.editor || this.$refs.editor.__quill) return;
-
-                    const self = this;
-                    this.quill = new Quill(this.$refs.editor, {
-                        theme: 'snow',
-                        modules: {
-                            history: {
-                                delay: 400,
-                                maxStack: 300,
-                                userOnly: false
-                            },
-                            imageResize: {},
-                            toolbar: {
-                                container: [
-                                    ['undo', 'redo'],
-                                    [{ 'header': [1, 2, 3, false] }],
-                                    ['bold', 'italic', 'underline', 'strike'],
-                                    [{'list': 'ordered'}, {'list': 'bullet'}],
-                                    [{'align': []}],
-                                    ['link', 'image'],
-                                    ['clean']
-                                ],
-                                handlers: {
-                                    undo: function() {
-                                        if (this.quill && this.quill.history) {
-                                            this.quill.history.undo();
-                                        }
-                                    },
-                                    redo: function() {
-                                        if (this.quill && this.quill.history) {
-                                            this.quill.history.redo();
-                                        }
-                                    },
-                                    image: function() {
-                                        window.addEventListener('media-selected-section-editor', (e) => {
-                                            let range = self.quill.getSelection(true);
-                                            if (!range) range = { index: self.quill.getLength() };
-                                            self.quill.insertEmbed(range.index, 'image', e.detail.url);
-                                        }, { once: true });
-                                        window.dispatchEvent(new CustomEvent('open-media-modal', { detail: { callbackEvent: 'media-selected-section-editor' } }));
-                                    }
-                                }
+                editor.ui.registry.addButton('media_library', {
+                    icon: 'media-folder',
+                    tooltip: 'Choose from Jhurio Media Library',
+                    onAction: function() {
+                        const callbackName = 'tinymce_media_' + Math.random().toString(36).substring(2, 9);
+                        window.addEventListener(callbackName, function(e) {
+                            if (e.detail && e.detail.url) {
+                                const url = e.detail.url;
+                                const alt = e.detail.title || e.detail.name || '';
+                                editor.insertContent('<img src="' + url + '" alt="' + alt + '" style="max-width: 100%; height: auto; border-radius: 8px;" />');
                             }
-                        }
-                    });
-
-                    this.$refs.editor.__quill = this.quill;
-
-                    if (section && section.content) {
-                        this.quill.root.innerHTML = section.content;
-                    }
-
-                    attachSafePaste(this.quill, () => {
-                        if (section) {
-                            section.content = this.quill.root.innerHTML;
-                        }
-                    });
-                    attachUndoRedo(this.quill);
-
-                    setTimeout(() => {
-                        if (this.quill && this.quill.history) {
-                            this.quill.history.clear();
-                        }
-                    }, 100);
-
-                    let isComposing = false;
-                    this.quill.root.addEventListener('compositionstart', () => {
-                        isComposing = true;
-                    });
-                    this.quill.root.addEventListener('compositionend', () => {
-                        isComposing = false;
-                        if (section) {
-                            section.content = this.quill.root.innerHTML;
-                        }
-                    });
-
-                    this.quill.on('text-change', () => {
-                        if (!isComposing && section) {
-                            section.content = this.quill.root.innerHTML;
-                        }
-                    });
-                });
-            }
-        }));
-
-        Alpine.data('quillEditor', () => ({
-            quill: null,
-            init() {
-                const self = this;
-                this.quill = new Quill(this.$refs.quillContainer, {
-                    theme: 'snow',
-                    modules: {
-                        history: {
-                            delay: 400,
-                            maxStack: 300,
-                            userOnly: false
-                        },
-                        imageResize: {},
-                        toolbar: {
-                            container: [
-                                ['undo', 'redo'],
-                                [{ 'header': [1, 2, 3, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{'list': 'ordered'}, {'list': 'bullet'}],
-                                [{'align': []}],
-                                ['link', 'image'],
-                                ['clean']
-                            ],
-                            handlers: {
-                                undo: function() {
-                                    if (this.quill && this.quill.history) {
-                                        this.quill.history.undo();
-                                    }
-                                },
-                                redo: function() {
-                                    if (this.quill && this.quill.history) {
-                                        this.quill.history.redo();
-                                    }
-                                },
-                                image: function() {
-                                    window.addEventListener('media-selected-editor', (e) => {
-                                        let range = self.quill.getSelection(true);
-                                        if(!range) range = { index: self.quill.getLength() };
-                                        self.quill.insertEmbed(range.index, 'image', e.detail.url);
-                                    }, { once: true });
-                                    window.dispatchEvent(new CustomEvent('open-media-modal', { detail: { callbackEvent: 'media-selected-editor' } }));
-                                }
-                            }
-                        }
+                        }, { once: true });
+                        window.dispatchEvent(new CustomEvent('open-media-modal', {
+                            detail: { callbackEvent: callbackName }
+                        }));
                     }
                 });
-                
-                this.$refs.quillContainer.__quill = this.quill;
-                this.syncValue();
-                attachSafePaste(this.quill, () => this.syncValue());
-                attachUndoRedo(this.quill);
 
-                setTimeout(() => {
-                    if (this.quill && this.quill.history) {
-                        this.quill.history.clear();
+                if (customOptions && typeof customOptions.setup === 'function') {
+                    customOptions.setup(editor);
+                }
+            }
+        };
+    }
+
+    function initMainEditors() {
+        if (typeof tinymce === 'undefined') return;
+        tinymce.get('description')?.remove();
+        tinymce.get('content')?.remove();
+
+        tinymce.init(getTinyMCEConfig('#description', { height: 220 }));
+        tinymce.init(getTinyMCEConfig('#content', { height: 420 }));
+    }
+
+    function initSectionEditor(id, section) {
+        const editorId = 'section_editor_' + id;
+        if (typeof tinymce === 'undefined') return;
+        tinymce.get(editorId)?.remove();
+
+        const el = document.getElementById(editorId);
+        if (!el) return;
+
+        tinymce.init({
+            ...getTinyMCEConfig('#' + editorId, {
+                height: 220,
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        if (section && section.content) {
+                            editor.setContent(section.content);
+                        }
+                    });
+                    editor.on('change keyup paste input nodechange', function() {
+                        if (section) {
+                            section.content = editor.getContent();
+                        }
+                    });
+                }
+            })
+        });
+    }
+
+    window.initAllTinyMCEEditors = function() {
+        if (typeof tinymce === 'undefined') return;
+        initMainEditors();
+    };
+
+    if (typeof tinymce !== 'undefined') {
+        window.initAllTinyMCEEditors();
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof tinymce !== 'undefined') {
+                window.initAllTinyMCEEditors();
+            } else {
+                let count = 0;
+                const timer = setInterval(() => {
+                    count++;
+                    if (typeof tinymce !== 'undefined') {
+                        clearInterval(timer);
+                        window.initAllTinyMCEEditors();
+                    } else if (count > 60) {
+                        clearInterval(timer);
                     }
                 }, 100);
+            }
+        });
+    }
 
-                let isComposing = false;
-                this.quill.root.addEventListener('compositionstart', () => {
-                    isComposing = true;
-                });
-                this.quill.root.addEventListener('compositionend', () => {
-                    isComposing = false;
-                    this.syncValue();
-                });
-
-                this.quill.on('text-change', () => {
-                    if (!isComposing) {
-                        this.syncValue();
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('sectionEditor', (section) => ({
+            init() {
+                this.$nextTick(() => {
+                    if (typeof tinymce !== 'undefined') {
+                        initSectionEditor(section.id, section);
+                    } else {
+                        let count = 0;
+                        const timer = setInterval(() => {
+                            count++;
+                            if (typeof tinymce !== 'undefined') {
+                                clearInterval(timer);
+                                initSectionEditor(section.id, section);
+                            } else if (count > 60) {
+                                clearInterval(timer);
+                            }
+                        }, 100);
                     }
                 });
-
-                const form = this.$refs.hiddenInput ? this.$refs.hiddenInput.closest('form') : null;
-                if (form) {
-                    form.addEventListener('submit', () => this.syncValue());
-                }
             },
-            syncValue() {
-                const isBlank = this.quill.getText().trim().length === 0 && !this.quill.root.querySelector('img');
-                this.$refs.hiddenInput.value = isBlank ? '' : this.quill.root.innerHTML;
+            destroy() {
+                if (typeof tinymce !== 'undefined') {
+                    tinymce.get('section_editor_' + section.id)?.remove();
+                }
             }
         }));
 
@@ -1440,24 +1307,50 @@
             },
 
             removeImageTextSection(index) {
+                const sec = this.image_text_sections[index];
+                if (sec && typeof tinymce !== 'undefined') {
+                    tinymce.get('section_editor_' + sec.id)?.remove();
+                }
                 this.image_text_sections.splice(index, 1);
             },
 
             moveSectionUp(index) {
                 if (index > 0) {
+                    this.syncAllEditors();
+                    const curId = this.image_text_sections[index].id;
+                    const prevId = this.image_text_sections[index - 1].id;
+                    if (typeof tinymce !== 'undefined') {
+                        tinymce.get('section_editor_' + curId)?.remove();
+                        tinymce.get('section_editor_' + prevId)?.remove();
+                    }
                     const temp = this.image_text_sections[index];
                     this.image_text_sections.splice(index, 1);
                     this.image_text_sections.splice(index - 1, 0, temp);
-                    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+                    this.$nextTick(() => {
+                        initSectionEditor(curId, this.image_text_sections[index - 1]);
+                        initSectionEditor(prevId, this.image_text_sections[index]);
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    });
                 }
             },
 
             moveSectionDown(index) {
                 if (index < this.image_text_sections.length - 1) {
+                    this.syncAllEditors();
+                    const curId = this.image_text_sections[index].id;
+                    const nextId = this.image_text_sections[index + 1].id;
+                    if (typeof tinymce !== 'undefined') {
+                        tinymce.get('section_editor_' + curId)?.remove();
+                        tinymce.get('section_editor_' + nextId)?.remove();
+                    }
                     const temp = this.image_text_sections[index];
                     this.image_text_sections.splice(index, 1);
                     this.image_text_sections.splice(index + 1, 0, temp);
-                    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+                    this.$nextTick(() => {
+                        initSectionEditor(curId, this.image_text_sections[index + 1]);
+                        initSectionEditor(nextId, this.image_text_sections[index]);
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    });
                 }
             },
 
@@ -1515,14 +1408,15 @@
             },
 
             syncAllEditors() {
-                document.querySelectorAll('[data-section-quill]').forEach((el) => {
-                    if (el.__quill && el.dataset.sectionId) {
-                        const sec = this.image_text_sections.find(s => s.id === el.dataset.sectionId);
-                        if (sec) {
-                            sec.content = el.__quill.root.innerHTML;
+                if (typeof tinymce !== 'undefined') {
+                    tinymce.triggerSave();
+                    this.image_text_sections.forEach(sec => {
+                        const ed = tinymce.get('section_editor_' + sec.id);
+                        if (ed) {
+                            sec.content = ed.getContent();
                         }
-                    }
-                });
+                    });
+                }
                 if (this.$refs.imageTextSectionsInput) {
                     this.$refs.imageTextSectionsInput.value = JSON.stringify(this.image_text_sections);
                 }
