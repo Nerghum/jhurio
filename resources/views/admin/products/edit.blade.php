@@ -1049,6 +1049,16 @@
     .tox .tox-toolbar__primary {
         background: transparent !important;
     }
+    .tox .tox-toolbar {
+        flex-wrap: wrap !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+    }
+    .dark .tox .tox-toolbar {
+        border-bottom-color: #374151 !important;
+    }
+    .tox .tox-toolbar:last-child {
+        border-bottom: none !important;
+    }
 </style>
 <script>
     function getTinyMCEConfig(selector, customOptions = {}) {
@@ -1071,7 +1081,11 @@
             skin: isDark ? 'oxide-dark' : 'oxide',
             content_css: isDark ? 'dark' : 'default',
             plugins: 'advlist autolink lists link image table code fullscreen wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | link media_library image table | removeformat code fullscreen',
+            toolbar_mode: 'wrap',
+            toolbar: [
+                'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | removeformat',
+                'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link media_library image table | code fullscreen'
+            ],
             font_family_formats: 'Hind Siliguri=Hind Siliguri,sans-serif; Noto Sans Bengali=Noto Sans Bengali,sans-serif; Inter=Inter,sans-serif; Outfit=Outfit,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times;',
             content_style: `
                 @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
@@ -1129,8 +1143,8 @@
         tinymce.get('description')?.remove();
         tinymce.get('content')?.remove();
 
-        tinymce.init(getTinyMCEConfig('#description', { height: 220 }));
-        tinymce.init(getTinyMCEConfig('#content', { height: 420 }));
+        tinymce.init(getTinyMCEConfig('#description', { height: 270 }));
+        tinymce.init(getTinyMCEConfig('#content', { height: 480 }));
     }
 
     function initSectionEditor(id, section) {
@@ -1143,7 +1157,7 @@
 
         tinymce.init({
             ...getTinyMCEConfig('#' + editorId, {
-                height: 220,
+                height: 270,
                 setup: function(editor) {
                     editor.on('init', function() {
                         if (section && section.content) {
