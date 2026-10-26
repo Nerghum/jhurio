@@ -1078,6 +1078,12 @@
 <script>
     document.addEventListener('alpine:init', () => {
         if (typeof Quill !== 'undefined') {
+            const icons = Quill.import('ui/icons');
+            if (icons) {
+                icons['undo'] = '<svg viewBox="0 0 18 18"><polygon class="ql-fill ql-stroke" points="6 10 4 12 2 10 6 10"></polygon><path class="ql-stroke" d="M4,12V8A4,4,0,0,1,8,4h6"></path></svg>';
+                icons['redo'] = '<svg viewBox="0 0 18 18"><polygon class="ql-fill ql-stroke" points="12 10 14 12 16 10 12 10"></polygon><path class="ql-stroke" d="M14,12V8A4,4,0,0,0,10,4H4"></path></svg>';
+            }
+
             const Clipboard = Quill.import('modules/clipboard');
             const Delta = Quill.import('delta');
 
@@ -1133,6 +1139,40 @@
             }, true);
         }
 
+        function attachUndoRedo(quill) {
+            if (!quill || !quill.root) return;
+
+            quill.root.addEventListener('keydown', function(e) {
+                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                const isShortKey = isMac ? e.metaKey : e.ctrlKey;
+
+                if (isShortKey) {
+                    const isZ = e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ' || e.keyCode === 90 || e.which === 90;
+                    const isY = e.key === 'y' || e.key === 'Y' || e.code === 'KeyY' || e.keyCode === 89 || e.which === 89;
+
+                    // Undo: (Cmd+Z or Ctrl+Z) without Shift
+                    if (isZ && !e.shiftKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (quill.history) {
+                            quill.history.undo();
+                        }
+                        return;
+                    }
+
+                    // Redo: (Cmd+Shift+Z or Ctrl+Shift+Z or Ctrl+Y)
+                    if ((isZ && e.shiftKey) || isY) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (quill.history) {
+                            quill.history.redo();
+                        }
+                        return;
+                    }
+                }
+            }, true);
+        }
+
         Alpine.data('sectionQuill', (section) => ({
             quill: null,
             init() {
@@ -1143,9 +1183,15 @@
                     this.quill = new Quill(this.$refs.editor, {
                         theme: 'snow',
                         modules: {
+                            history: {
+                                delay: 400,
+                                maxStack: 300,
+                                userOnly: false
+                            },
                             imageResize: {},
                             toolbar: {
                                 container: [
+                                    ['undo', 'redo'],
                                     [{ 'header': [1, 2, 3, false] }],
                                     ['bold', 'italic', 'underline', 'strike'],
                                     [{'list': 'ordered'}, {'list': 'bullet'}],
@@ -1154,6 +1200,16 @@
                                     ['clean']
                                 ],
                                 handlers: {
+                                    undo: function() {
+                                        if (this.quill && this.quill.history) {
+                                            this.quill.history.undo();
+                                        }
+                                    },
+                                    redo: function() {
+                                        if (this.quill && this.quill.history) {
+                                            this.quill.history.redo();
+                                        }
+                                    },
                                     image: function() {
                                         window.addEventListener('media-selected-section-editor', (e) => {
                                             let range = self.quill.getSelection(true);
@@ -1178,6 +1234,13 @@
                             section.content = this.quill.root.innerHTML;
                         }
                     });
+                    attachUndoRedo(this.quill);
+
+                    setTimeout(() => {
+                        if (this.quill && this.quill.history) {
+                            this.quill.history.clear();
+                        }
+                    }, 100);
 
                     let isComposing = false;
                     this.quill.root.addEventListener('compositionstart', () => {
@@ -1206,9 +1269,15 @@
                 this.quill = new Quill(this.$refs.quillContainer, {
                     theme: 'snow',
                     modules: {
+                        history: {
+                            delay: 400,
+                            maxStack: 300,
+                            userOnly: false
+                        },
                         imageResize: {},
                         toolbar: {
                             container: [
+                                ['undo', 'redo'],
                                 [{ 'header': [1, 2, 3, false] }],
                                 ['bold', 'italic', 'underline', 'strike'],
                                 [{'list': 'ordered'}, {'list': 'bullet'}],
@@ -1217,6 +1286,16 @@
                                 ['clean']
                             ],
                             handlers: {
+                                undo: function() {
+                                    if (this.quill && this.quill.history) {
+                                        this.quill.history.undo();
+                                    }
+                                },
+                                redo: function() {
+                                    if (this.quill && this.quill.history) {
+                                        this.quill.history.redo();
+                                    }
+                                },
                                 image: function() {
                                     window.addEventListener('media-selected-editor', (e) => {
                                         let range = self.quill.getSelection(true);
@@ -1233,6 +1312,13 @@
                 this.$refs.quillContainer.__quill = this.quill;
                 this.syncValue();
                 attachSafePaste(this.quill, () => this.syncValue());
+                attachUndoRedo(this.quill);
+
+                setTimeout(() => {
+                    if (this.quill && this.quill.history) {
+                        this.quill.history.clear();
+                    }
+                }, 100);
 
                 let isComposing = false;
                 this.quill.root.addEventListener('compositionstart', () => {
