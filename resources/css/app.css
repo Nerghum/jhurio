@@ -9,7 +9,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Outfit', 'Hind Siliguri', 'Noto Sans Bengali', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Outfit', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-bangla: 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
     
     --color-primary: #0b3506;
     --color-secondary: #6bc112;
@@ -28,10 +29,39 @@
     }
 }
 
+/* Product Page Typography & Minimum Line-height for Bengali readability */
+.product-page-container {
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.product-page-container p,
+.product-page-container li,
+.product-page-container .rich-text-content,
+.product-page-container .product-description-snippet {
+    line-height: 1.85;
+}
+
+.product-page-container .rich-text-content p,
+.product-page-container .rich-text-content li,
+.product-page-container .product-description-snippet p,
+.product-page-container .product-description-snippet li {
+    line-height: 1.85;
+}
+
+.product-page-container h1,
+.product-page-container h2,
+.product-page-container h3,
+.product-page-container h4 {
+    letter-spacing: normal;
+    line-height: 1.35;
+}
+
 /* Rich Text / Quill Output Styles for Product Description Snippet and Content */
 .product-description-snippet,
 .rich-text-content {
-    font-family: 'Hind Siliguri', 'Noto Sans Bengali', var(--font-sans);
+    font-family: 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', var(--font-sans);
     line-height: 1.85;
     word-break: normal;
     overflow-wrap: break-word;

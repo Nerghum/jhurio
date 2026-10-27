@@ -3,7 +3,7 @@
 @section('title', $product->name)
 
 @section('content')
-<div class="bg-white dark:bg-dark py-4 sm:py-6 lg:py-8" x-data="productPage()">
+<div class="bg-white dark:bg-dark py-4 sm:py-6 lg:py-8 product-page-container" x-data="productPage()">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         @php
@@ -38,48 +38,50 @@
         </nav>
 
         <!-- Product Main Section -->
-        <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16 items-start">
             
-            <!-- Left: Media Gallery (Optimized Mobile: 24% Vertical Thumbnails Left, Main Image Right, Max 60vh) -->
-            <div class="flex flex-row gap-2 sm:gap-3 lg:gap-4 mb-6 lg:mb-0 h-[50vh] sm:h-[55vh] max-h-[60vh] lg:h-[580px] lg:max-h-[600px] items-stretch">
-                <!-- Thumbnails (Vertical on Mobile 24% width, Vertical on Desktop w-24) -->
-                <div x-show="images.length > 1" 
-                     class="flex flex-col gap-2 sm:gap-2.5 overflow-y-auto max-h-full scrollbar-hide py-0.5 w-[24%] lg:w-24 flex-shrink-0" 
-                     style="scrollbar-width: none; -ms-overflow-style: none;">
-                    <template x-for="(img, index) in images" :key="index">
-                        <button 
-                            type="button"
-                            @click="activeImage = img"
-                            :class="{'border-primary dark:border-primary ring-2 ring-primary/20 shadow-sm opacity-100': activeImage === img, 'border-gray-200 dark:border-gray-700 hover:border-primary/50 opacity-60 hover:opacity-100': activeImage !== img}"
-                            class="relative flex-shrink-0 w-full aspect-square rounded-lg sm:rounded-xl border-2 overflow-hidden focus:outline-none transition-all p-0.5 bg-white dark:bg-gray-800"
-                        >
-                            <img :src="img" alt="Thumbnail" class="w-full h-full object-cover rounded-md sm:rounded-lg">
-                        </button>
-                    </template>
-                </div>
-                
-                <!-- Main Large Image -->
-                <div class="flex-1 min-w-0 h-full max-h-full relative bg-gray-50 dark:bg-gray-800/80 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700/60 overflow-hidden flex items-center justify-center group">
-                    <img :src="activeImage" 
-                         src="{{ $product->thumbnail?->url ?? $product->image_url ?? '' }}"
-                         alt="{{ $product->name }}" 
-                         class="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-500" 
-                         :class="{'scale-150 cursor-zoom-in': zoom}" 
-                         @click="zoom = !zoom" 
-                         @mousemove="zoomImage(event)">
+            <!-- Left: Media Gallery (Sticky on Desktop until right section content scroll ends) -->
+            <div class="lg:sticky lg:top-24 mb-6 lg:mb-0 z-10">
+                <div class="flex flex-row gap-2 sm:gap-3 lg:gap-4 h-[50vh] sm:h-[55vh] max-h-[60vh] lg:h-[580px] lg:max-h-[600px] items-stretch">
+                    <!-- Thumbnails (Vertical on Mobile 24% width, Vertical on Desktop w-24) -->
+                    <div x-show="images.length > 1" 
+                         class="flex flex-col gap-2 sm:gap-2.5 overflow-y-auto max-h-full scrollbar-hide py-0.5 w-[24%] lg:w-24 flex-shrink-0" 
+                         style="scrollbar-width: none; -ms-overflow-style: none;">
+                        <template x-for="(img, index) in images" :key="index">
+                            <button 
+                                type="button"
+                                @click="activeImage = img"
+                                :class="{'border-primary dark:border-primary ring-2 ring-primary/20 shadow-sm opacity-100': activeImage === img, 'border-gray-200 dark:border-gray-700 hover:border-primary/50 opacity-60 hover:opacity-100': activeImage !== img}"
+                                class="relative flex-shrink-0 w-full aspect-square rounded-lg sm:rounded-xl border-2 overflow-hidden focus:outline-none transition-all p-0.5 bg-white dark:bg-gray-800"
+                            >
+                                <img :src="img" alt="Thumbnail" class="w-full h-full object-cover rounded-md sm:rounded-lg">
+                            </button>
+                        </template>
+                    </div>
                     
-                    @if($product->video_url)
-                    <a href="{{ $product->video_url }}" target="_blank" class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur text-gray-900 dark:text-white p-2 sm:p-2.5 rounded-xl shadow-lg hover:scale-110 transition-transform z-10" title="Watch Product Video">
-                        <i data-lucide="play" class="w-4 h-4 sm:w-5 sm:h-5 fill-current"></i>
-                    </a>
-                    @endif
+                    <!-- Main Large Image -->
+                    <div class="flex-1 min-w-0 h-full max-h-full relative bg-gray-50 dark:bg-gray-800/80 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700/60 overflow-hidden flex items-center justify-center group">
+                        <img :src="activeImage" 
+                             src="{{ $product->thumbnail?->url ?? $product->image_url ?? '' }}"
+                             alt="{{ $product->name }}" 
+                             class="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-500" 
+                             :class="{'scale-150 cursor-zoom-in': zoom}" 
+                             @click="zoom = !zoom" 
+                             @mousemove="zoomImage(event)">
+                        
+                        @if($product->video_url)
+                        <a href="{{ $product->video_url }}" target="_blank" class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur text-gray-900 dark:text-white p-2 sm:p-2.5 rounded-xl shadow-lg hover:scale-110 transition-transform z-10" title="Watch Product Video">
+                            <i data-lucide="play" class="w-4 h-4 sm:w-5 sm:h-5 fill-current"></i>
+                        </a>
+                        @endif
+                    </div>
                 </div>
             </div>
 
             <!-- Right: Product Details -->
-            <div class="flex flex-col">
+            <div class="flex flex-col min-w-0">
                 <div class="flex justify-between items-start mb-2 gap-4">
-                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $product->name }}</h1>
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold sm:font-extrabold text-gray-900 dark:text-white tracking-normal leading-[1.35]">{{ $product->name }}</h1>
                     
                     @php
                         $inWishlist = false;
@@ -151,13 +153,13 @@
 
                 <!-- Description Snippet -->
                 @if($product->description || $product->content)
-                <div class="product-description-snippet rich-text-content text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 leading-relaxed
-                            [&_p]:mb-2.5 [&_p:last-child]:mb-0
+                <div class="product-description-snippet rich-text-content text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 leading-[1.8] sm:leading-[1.85] font-light sm:font-normal
+                            [&_p]:mb-2.5 [&_p:last-child]:mb-0 [&_p]:leading-[1.8] sm:[&_p]:leading-[1.85]
                             [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2.5 [&_ul]:space-y-1.5
                             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2.5 [&_ol]:space-y-1.5
-                            [&_li]:text-gray-700 dark:[&_li]:text-gray-300 [&_li]:leading-normal
-                            [&_strong]:font-bold [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                            [&_b]:font-bold [&_b]:text-gray-900 dark:[&_b]:text-white
+                            [&_li]:text-gray-700 dark:[&_li]:text-gray-300 [&_li]:leading-[1.75]
+                            [&_strong]:font-semibold [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                            [&_b]:font-semibold [&_b]:text-gray-900 dark:[&_b]:text-white
                             [&_em]:italic [&_u]:underline
                             [&_a]:text-primary dark:[&_a]:text-secondary [&_a]:underline hover:[&_a]:opacity-80">
                     {!! $product->description ?: Str::limit(strip_tags($product->content), 150) !!}
@@ -491,15 +493,29 @@
                     <div class="space-y-4">
 
                         <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
-                            <button type="button" @click="accordion = accordion === 'shipping' ? '' : 'shipping'" class="w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
-                                <span class="font-semibold text-gray-900 dark:text-white">Shipping & Returns</span>
-                                <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform duration-300" :class="{'rotate-180': accordion === 'shipping'}"></i>
+                            <button type="button" @click="accordion = accordion === 'shipping' ? '' : 'shipping'" class="w-full px-5 py-4 flex justify-between items-center text-left focus:outline-none">
+                                <span class="font-semibold text-gray-900 dark:text-white flex items-center gap-2 text-sm sm:text-base">
+                                    <i data-lucide="truck" class="w-4 h-4 text-primary dark:text-secondary flex-shrink-0"></i>
+                                    <span>ডেলিভারি এবং রিটার্ন পলিসি</span>
+                                </span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform duration-300 flex-shrink-0" :class="{'rotate-180': accordion === 'shipping'}"></i>
                             </button>
                             <div x-show="accordion === 'shipping'" x-collapse>
-                                <div class="px-6 pb-4 text-sm text-gray-600 dark:text-gray-300 space-y-2">
-                                    <p><strong>Free Standard Shipping:</strong> 3-5 business days.</p>
-                                    <p><strong>Express Shipping:</strong> 1-2 business days ($15.00).</p>
-                                    <p>We accept returns within 30 days of receipt. Items must be in their original condition and packaging. Return shipping is covered by us for defective items.</p>
+                                <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-300 space-y-3 leading-[1.8] border-t border-gray-100 dark:border-gray-700/60 pt-3">
+                                    <div class="flex items-start gap-2.5">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <strong class="text-gray-900 dark:text-white font-semibold">স্ট্যান্ডার্ড ডেলিভারি:</strong>
+                                            <p class="inline"> ৩-৫ কার্যদিবসের মধ্যে সারা বাংলাদেশে হোম ডেলিভারি পৌঁছে দেওয়া হয়। (কোনো এক্সপ্রেস ডেলিভারি নেই)</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2.5">
+                                        <i data-lucide="corner-down-left" class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <strong class="text-gray-900 dark:text-white font-semibold">সহজ রিটার্ন পলিসি:</strong>
+                                            <p class="inline"> ডেলিভারিম্যানের সামনেই পণ্যটি ভালোভাবে চেক করে গ্রহণ করবেন। কোনো সমস্যা থাকলে বা পছন্দ না হলে ডেলিভারিম্যানের হাতেই সাথে সাথে রিটার্ন করতে পারবেন (এক্ষেত্রে শুধুমাত্র ডেলিভারি চার্জ প্রযোজ্য হবে)।</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -514,9 +530,9 @@
     <!-- Full Width Description -->
     @if($product->content)
     <div class="mt-8 sm:mt-10 lg:mt-12 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8">
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Product Description</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">পণ্য বিবরণী / Product Description</h2>
         <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm w-full overflow-hidden">
-            <div class="prose dark:prose-invert rich-text-content max-w-none w-full break-words overflow-x-auto">
+            <div class="prose dark:prose-invert rich-text-content max-w-none w-full break-words overflow-x-auto leading-[1.8] sm:leading-[1.85] font-light sm:font-normal [&_p]:leading-[1.85] [&_li]:leading-[1.75]">
                 {!! $product->content !!}
             </div>
         </div>
@@ -742,7 +758,7 @@
                                     <span class="text-xs text-gray-500">{{ $review->created_at->diffForHumans() }}</span>
                                 </div>
                                 @if($review->comment)
-                                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{{ $review->comment }}</p>
+                                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-[1.8]">{{ $review->comment }}</p>
                                 @endif
                                 
                                 @if(!empty($review->media) && is_array($review->media))

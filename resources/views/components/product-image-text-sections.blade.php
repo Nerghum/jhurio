@@ -38,13 +38,13 @@
                         @endif
 
                         @if($title)
-                            <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4 leading-snug">
+                            <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-normal mb-4 leading-[1.35]">
                                 {{ $title }}
                             </h3>
                         @endif
 
                         @if($content)
-                            <div class="text-gray-600 dark:text-gray-300 text-sm sm:text-base leading-relaxed mb-6 prose prose-sm sm:prose-base dark:prose-invert max-w-none">
+                            <div class="text-gray-600 dark:text-gray-300 text-sm sm:text-base leading-[1.8] sm:leading-[1.85] mb-6 prose prose-sm sm:prose-base dark:prose-invert max-w-none [&_p]:leading-[1.85] [&_li]:leading-[1.75]">
                                 {!! Str::contains($content, ['<p>', '<div>', '<br>', '<h', '<ul>', '<ol>']) ? $content : nl2br(e($content)) !!}
                             </div>
                         @endif
