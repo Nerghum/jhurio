@@ -11,6 +11,8 @@ Route::get('/user', function (Request $request) {
 
 Route::middleware(['api.auth'])->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
+    Route::match(['put', 'patch'], '/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 });
 
 // Analytics Tracking Endpoint
