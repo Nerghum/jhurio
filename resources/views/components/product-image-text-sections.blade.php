@@ -16,8 +16,8 @@
             @php
                 $title = $section['title'] ?? '';
                 $subtitle = $section['subtitle'] ?? '';
-                $content = $section['content'] ?? '';
-                $imageUrl = $section['image_url'] ?? '';
+                $content = $section['content'] ?? ($section['description'] ?? '');
+                $imageUrl = $section['image_url'] ?? ($section['image'] ?? '');
                 $imagePosition = $section['image_position'] ?? 'right'; // 'right' (Text Left, Image Right) or 'left' (Image Left, Text Right)
                 $btnText = $section['button_text'] ?? '';
                 $btnUrl = $section['button_url'] ?? '#';

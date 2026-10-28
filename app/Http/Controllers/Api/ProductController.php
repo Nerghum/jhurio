@@ -47,6 +47,26 @@ class ProductController extends Controller
             $counter++;
         }
 
+        $imageTextSections = $validated['image_text_sections'] ?? null;
+        if (is_array($imageTextSections)) {
+            $imageTextSections = array_map(function ($sec, $idx) {
+                if (! isset($sec['content']) && isset($sec['description'])) {
+                    $sec['content'] = $sec['description'];
+                }
+                if (! isset($sec['image_url']) && isset($sec['image'])) {
+                    $sec['image_url'] = $sec['image'];
+                }
+                if (! isset($sec['display_position'])) {
+                    $sec['display_position'] = 'after_description';
+                }
+                if (! isset($sec['image_position'])) {
+                    $sec['image_position'] = $idx % 2 === 1 ? 'left' : 'right';
+                }
+
+                return $sec;
+            }, $imageTextSections, array_keys($imageTextSections));
+        }
+
         $product = Product::create([
             'name' => $validated['name'],
             'slug' => $slug,
@@ -55,7 +75,7 @@ class ProductController extends Controller
             'compare_at_price' => $validated['compare_at_price'] ?? null,
             'description' => $validated['description'] ?? '',
             'content' => $validated['content'] ?? null,
-            'image_text_sections' => $validated['image_text_sections'] ?? null,
+            'image_text_sections' => $imageTextSections,
             'video_url' => $validated['video_url'] ?? null,
             'status' => $validated['status'] ?? 'published',
             'stock_quantity' => $validated['stock_quantity'] ?? 10,
