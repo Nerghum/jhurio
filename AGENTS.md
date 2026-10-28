@@ -59,6 +59,20 @@ Before relying on a package's API, confirm its installed version:
 
 # PHPUnit
 
-- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `php artisan test --compact`.
+=== product upload rules ===
+
+# Product Upload via API (Jhurio Live Site)
+
+When the user provides a product URL to upload/import to https://jhurio.com:
+- Target Site: https://jhurio.com
+- API Endpoint: POST https://jhurio.com/api/products
+- Authorization: Bearer prozRcAArjlDDhV8ZRI3qeVFKRYsIy8c
+- Follow instructions in PRODUCT_UPLOAD_INSTRUCTIONS.txt:
+  1. Scrape product data and images.
+  2. Remove image background with Python rembg, crop and center cleanly.
+  3. Save images to public/assets/images/products/<slug>/ and git push to main.
+  4. Rewrite title, short description, and full content in engaging Bangla (do not directly copy).
+  5. Include 2 Bangla image_text_sections with images and CTA buttons.
+  6. Send POST to https://jhurio.com/api/products and verify the live product URL.
 
 </laravel-boost-guidelines>

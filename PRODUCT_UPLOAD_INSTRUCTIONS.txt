@@ -1,0 +1,87 @@
+================================================================================
+JHURIO.COM - PRODUCT UPLOAD API CONFIGURATION & INSTRUCTIONS
+================================================================================
+
+1. SITE CREDENTIALS & API ENDPOINT
+--------------------------------------------------------------------------------
+Site URL:       https://jhurio.com
+API Endpoint:   POST https://jhurio.com/api/products
+API Token:      prozRcAArjlDDhV8ZRI3qeVFKRYsIy8c
+Headers:
+  Authorization: Bearer prozRcAArjlDDhV8ZRI3qeVFKRYsIy8c
+  Content-Type:  application/json
+  Accept:        application/json
+
+--------------------------------------------------------------------------------
+2. INSTRUCTIONS FOR THE AGENT (WHEN USER PROVIDES A PRODUCT URL)
+--------------------------------------------------------------------------------
+When the user provides a product URL (e.g. from HTBazar, Daraz, or any e-commerce site):
+
+Step 1: Extract Product Data
+  - Scrape the title, offer price, compare-at price, features, specifications, and gallery images.
+
+Step 2: Remove Image Backgrounds
+  - Download all product gallery images.
+  - Remove backgrounds, watermarks, foreign brand logos, and bad borders using Python `rembg` (u2net model).
+  - Crop & center the product cutouts cleanly on a 1000x1000 or 1200x1200 canvas.
+  - Save processed images into:
+      `public/assets/images/products/<product-slug>/`
+  - Commit and push to Git (`git add public/assets/... && git commit && git push origin main`) so that:
+      (a) Raw GitHub URLs are immediately reachable by the API downloader.
+      (b) Images become permanent assets on the live server upon deployment.
+
+Step 3: Persuasive Bangla Copywriting (DO NOT DIRECTLY COPY)
+  - Title: Engaging TitleCase Bangla name with key benefits (e.g., প্রিমিয়াম রোতো পুশ চপার – হ্যান্ড প্রেস আল্ট্রা ফাস্ট...).
+  - Short Description: 2-3 sentences highlighting core pain points (e.g., চোখে পানি না ফেলে কাটার সুবিধা, ৩টি স্টেইনলেস স্টিল ব্লেড, বিদ্যুৎহীন হ্যান্ড প্রেস).
+  - Full Content (`content`): Structured rich HTML description with:
+      - কেন এই পণ্য সেরা? (Key benefits with bullet points)
+      - যা যা কাটা/ব্যবহার করা যাবে
+      - টেকনিক্যাল স্পেসিফিকেশন (ব্লেড, ধারণক্ষমতা, ম্যাটেরিয়াল ইত্যাদি)
+
+Step 4: Create 2 Bangla Image-Text Sections (`image_text_sections`)
+  - Section 1:
+      - title: Feature headline in Bangla (e.g. হালকা এক চাপেই সেকেন্ডে পারফেক্ট কুচি)
+      - subtitle: Section badge (e.g. সুপার ফাস্ট চপিং মেকানিজম)
+      - content: Clear, engaging explanation of how it works.
+      - image_url: URL of the processed action or feature image.
+      - image_position: "right"
+      - display_position: "after_description"
+      - button_text: "অর্ডার করতে চাই"
+      - button_url: "#"
+  - Section 2:
+      - title: Quality headline in Bangla (e.g. মরিচারোধক স্টেইনলেস স্টিল ব্লেড ও বিপিএ-মুক্ত বডি)
+      - subtitle: Section badge (e.g. প্রিমিয়াম ফুড-গ্রেড বিল্ড কোয়ালিটি)
+      - content: Durability, safety, food-grade materials, and washing convenience.
+      - image_url: URL of the second processed feature/lifestyle image.
+      - image_position: "left"
+      - display_position: "after_description"
+      - button_text: "এখনই কিনুন"
+      - button_url: "#"
+
+Step 5: Post via API
+  - Send POST request to: `https://jhurio.com/api/products`
+  - JSON Payload schema:
+    {
+      "name": "<Rewritten Bangla Title>",
+      "slug": "<Clean English Slug>",
+      "price": <offer_price_number>,
+      "purchase_price": <cost_price_number>,
+      "compare_at_price": <original_price_number>,
+      "stock_quantity": 50,
+      "status": "published",
+      "categories": ["Kitchen Items", "Kitchen Accessories"],
+      "tags": ["Tag1", "Tag2"],
+      "description": "<p>Short description HTML</p>",
+      "content": "<div>Full rich description HTML</div>",
+      "image_text_sections": [ ...2 sections... ],
+      "image_urls": [
+        "https://raw.githubusercontent.com/Nerghum/jhurio/main/public/assets/images/products/<slug>/image1.png",
+        "https://raw.githubusercontent.com/Nerghum/jhurio/main/public/assets/images/products/<slug>/image2.png"
+      ]
+    }
+
+Step 6: Verify and Confirm
+  - Check HTTP 201 response.
+  - Verify live product link: `https://jhurio.com/product/<slug>`
+  - Ensure image gallery, price, full description, and both image-text sections display properly.
+================================================================================
