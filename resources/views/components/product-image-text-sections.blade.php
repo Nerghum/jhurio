@@ -27,6 +27,7 @@
                 <div class="flex flex-col {{ $imagePosition === 'left' ? 'lg:flex-row-reverse' : 'lg:flex-row' }} items-center gap-8 lg:gap-12">
                     
                     <!-- Content Column -->
+                    @if($title || $subtitle || $content || $btnText)
                     <div class="w-full {{ $imageUrl ? 'lg:w-1/2' : 'lg:w-full' }} flex flex-col justify-center">
                         @if($subtitle)
                             <div class="mb-3">
@@ -58,16 +59,16 @@
                             </div>
                         @endif
                     </div>
+                    @endif
 
-                    <!-- Image Column -->
+                    <!-- Image Column (Full width, Auto height, Natural ratio) -->
                     @if($imageUrl)
-                    <div class="w-full lg:w-1/2">
-                        <div class="w-full rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:h-[380px] bg-gray-100 dark:bg-gray-800 relative shadow-md border border-gray-200/60 dark:border-gray-700/60">
+                    <div class="w-full {{ ($title || $subtitle || $content || $btnText) ? 'lg:w-1/2' : 'lg:w-full' }}">
+                        <div class="w-full rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-md border border-gray-200/60 dark:border-gray-700/60">
                             <img src="{{ $imageUrl }}" 
                                  alt="{{ $title ?: 'Product feature image' }}" 
                                  loading="lazy"
-                                 class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                                 class="w-full h-auto block rounded-2xl group-hover:scale-[1.01] transition-transform duration-500 ease-out">
                         </div>
                     </div>
                     @endif

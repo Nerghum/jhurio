@@ -18,8 +18,8 @@
             
             <!-- Image Side -->
             @if($image)
-            <div class="w-full md:w-1/2 h-64 md:h-auto md:min-h-[350px] relative">
-                <img src="{{ $image }}" alt="{{ $title }}" class="absolute inset-0 w-full h-full object-cover">
+            <div class="w-full md:w-1/2 flex items-center justify-center p-4 sm:p-6">
+                <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-auto object-contain rounded-2xl shadow-sm">
             </div>
             @endif
 
