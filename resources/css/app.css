@@ -58,6 +58,16 @@
     line-height: 1.35;
 }
 
+/* Sticky Media Gallery on Product Page */
+@media (min-width: 1024px) {
+    .product-gallery-sticky {
+        position: -webkit-sticky !important;
+        position: sticky !important;
+        top: 5.5rem !important; /* 88px, 8px breathing room below 80px fixed navbar */
+        z-index: 20 !important;
+    }
+}
+
 /* Rich Text / Quill Output Styles for Product Description Snippet and Content */
 .product-description-snippet,
 .rich-text-content {

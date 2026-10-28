@@ -38,11 +38,13 @@
         </nav>
 
         <!-- Product Main Section -->
-        <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16 items-start">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
             
-            <!-- Left: Media Gallery (Sticky on Desktop until right section content scroll ends) -->
-            <div class="lg:sticky lg:top-24 mb-6 lg:mb-0 z-10">
-                <div class="flex flex-row gap-2 sm:gap-3 lg:gap-4 h-[50vh] sm:h-[55vh] max-h-[60vh] lg:h-[580px] lg:max-h-[600px] items-stretch">
+            <!-- Left Column: Media Gallery Column (Stretches full height of right section) -->
+            <div class="w-full h-full mb-6 lg:mb-0">
+                <!-- Sticky Gallery: Pins to top below navbar and stops when Left Column ends -->
+                <div class="product-gallery-sticky lg:sticky lg:top-[5.5rem] z-20">
+                    <div class="flex flex-row gap-2 sm:gap-3 lg:gap-4 h-[50vh] sm:h-[55vh] max-h-[60vh] lg:h-[580px] lg:max-h-[600px] items-stretch">
                     <!-- Thumbnails (Vertical on Mobile 24% width, Vertical on Desktop w-24) -->
                     <div x-show="images.length > 1" 
                          class="flex flex-col gap-2 sm:gap-2.5 overflow-y-auto max-h-full scrollbar-hide py-0.5 w-[24%] lg:w-24 flex-shrink-0" 
@@ -77,6 +79,7 @@
                     </div>
                 </div>
             </div>
+        </div>
 
             <!-- Right: Product Details -->
             <div class="flex flex-col min-w-0">
