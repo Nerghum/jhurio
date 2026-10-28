@@ -21,6 +21,42 @@
         [x-cloak] { display: none !important; }
         
         body { font-family: 'Outfit', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; }
+        
+        /* Sticky Product Image Gallery */
+        @media (min-width: 1024px) {
+            .product-gallery-sticky {
+                position: -webkit-sticky !important;
+                position: sticky !important;
+                top: 5.5rem !important;
+                z-index: 20 !important;
+            }
+        }
+        
+        /* Product Page Typography & Minimum Line-height for Bengali readability */
+        .product-page-container {
+            line-height: 1.75;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        .product-page-container p,
+        .product-page-container li,
+        .product-page-container .rich-text-content,
+        .product-page-container .product-description-snippet {
+            line-height: 1.85;
+        }
+        .product-page-container .rich-text-content p,
+        .product-page-container .rich-text-content li,
+        .product-page-container .product-description-snippet p,
+        .product-page-container .product-description-snippet li {
+            line-height: 1.85;
+        }
+        .product-page-container h1,
+        .product-page-container h2,
+        .product-page-container h3,
+        .product-page-container h4 {
+            letter-spacing: normal;
+            line-height: 1.35;
+        }
         .glassmorphism {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
