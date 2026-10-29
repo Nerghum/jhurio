@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,83 @@ class ProductController extends Controller
 {
     public function store(Request $request)
     {
+        // Support listing products via POST /api/products { "action": "list_products" }
+        if ($request->input('action') === 'list_products' || $request->input('action') === 'get_products') {
+            $products = Product::with(['categories', 'tags', 'thumbnail'])
+                ->withCount(['reviews as approved_reviews_count' => function ($query) {
+                    $query->where('status', 'approved');
+                }])
+                ->with(['reviews' => function ($query) {
+                    $query->where('status', 'approved')->latest();
+                }])
+                ->latest()
+                ->get();
+
+            return response()->json([
+                'total' => $products->count(),
+                'products' => $products,
+            ]);
+        }
+
+        // Support adding reviews via POST /api/products { "action": "add_reviews", "product_id": 19, "reviews": [...] }
+        if ($request->input('action') === 'add_reviews' || ($request->has('reviews') && ($request->has('product_id') || $request->has('slug')))) {
+            $product = null;
+            if ($request->filled('product_id')) {
+                $product = Product::find($request->input('product_id'));
+            } elseif ($request->filled('slug')) {
+                $product = Product::where('slug', $request->input('slug'))->first();
+            }
+
+            if (! $product) {
+                return response()->json([
+                    'error' => 'Product not found. Please provide a valid product_id or slug.',
+                ], 404);
+            }
+
+            $reviewsData = $request->input('reviews');
+            if (! is_array($reviewsData) || empty($reviewsData)) {
+                return response()->json([
+                    'error' => 'The reviews field must be a non-empty array.',
+                ], 422);
+            }
+
+            $createdReviews = [];
+            foreach ($reviewsData as $rev) {
+                if (empty($rev['reviewer_name'])) {
+                    continue;
+                }
+
+                $createdAt = ! empty($rev['created_at'])
+                    ? Carbon::parse($rev['created_at'])
+                    : now();
+
+                $createdReviews[] = Review::create([
+                    'product_id' => $product->id,
+                    'user_id' => $rev['user_id'] ?? null,
+                    'reviewer_name' => $rev['reviewer_name'],
+                    'reviewer_email' => $rev['reviewer_email'] ?? null,
+                    'rating' => (int) ($rev['rating'] ?? 5),
+                    'comment' => $rev['comment'] ?? null,
+                    'is_verified_purchase' => isset($rev['is_verified_purchase']) ? (bool) $rev['is_verified_purchase'] : true,
+                    'status' => $rev['status'] ?? 'approved',
+                    'media' => ! empty($rev['media']) && is_array($rev['media']) ? $rev['media'] : null,
+                    'created_at' => $createdAt,
+                ]);
+            }
+
+            return response()->json([
+                'message' => count($createdReviews).' reviews added successfully',
+                'count' => count($createdReviews),
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'total_approved_reviews' => $product->reviews()->where('status', 'approved')->count(),
+                ],
+                'reviews' => $createdReviews,
+            ], 201);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255',
