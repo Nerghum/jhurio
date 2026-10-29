@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -219,5 +220,128 @@ class ProductController extends Controller
         return response()->json([
             'message' => 'Product deleted successfully',
         ]);
+    }
+
+    public function index(Request $request)
+    {
+        $products = Product::with(['categories', 'tags', 'thumbnail'])
+            ->withCount(['reviews as approved_reviews_count' => function ($query) {
+                $query->where('status', 'approved');
+            }])
+            ->with(['reviews' => function ($query) {
+                $query->where('status', 'approved')->latest();
+            }])
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'total' => $products->count(),
+            'products' => $products,
+        ]);
+    }
+
+    public function addReview(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'reviewer_name' => 'required|string|max:255',
+            'reviewer_email' => 'nullable|email|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+            'is_verified_purchase' => 'nullable|boolean',
+            'status' => 'nullable|in:approved,pending,spam',
+            'media' => 'nullable|array',
+            'media.*' => 'string',
+            'created_at' => 'nullable|date',
+        ]);
+
+        $review = Review::create([
+            'product_id' => $product->id,
+            'user_id' => null,
+            'reviewer_name' => $validated['reviewer_name'],
+            'reviewer_email' => $validated['reviewer_email'] ?? null,
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'] ?? null,
+            'is_verified_purchase' => $validated['is_verified_purchase'] ?? true,
+            'status' => $validated['status'] ?? 'approved',
+            'media' => $validated['media'] ?? null,
+            'created_at' => $validated['created_at'] ?? now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Review added successfully',
+            'review' => $review,
+        ], 201);
+    }
+
+    public function addReviewsBatch(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'reviews' => 'required|array|min:1',
+            'reviews.*.reviewer_name' => 'required|string|max:255',
+            'reviews.*.reviewer_email' => 'nullable|email|max:255',
+            'reviews.*.rating' => 'required|integer|min:1|max:5',
+            'reviews.*.comment' => 'nullable|string',
+            'reviews.*.is_verified_purchase' => 'nullable|boolean',
+            'reviews.*.status' => 'nullable|in:approved,pending,spam',
+            'reviews.*.media' => 'nullable|array',
+            'reviews.*.media.*' => 'string',
+            'reviews.*.created_at' => 'nullable|date',
+        ]);
+
+        $createdReviews = [];
+        foreach ($validated['reviews'] as $rev) {
+            $createdReviews[] = Review::create([
+                'product_id' => $product->id,
+                'user_id' => null,
+                'reviewer_name' => $rev['reviewer_name'],
+                'reviewer_email' => $rev['reviewer_email'] ?? null,
+                'rating' => $rev['rating'],
+                'comment' => $rev['comment'] ?? null,
+                'is_verified_purchase' => $rev['is_verified_purchase'] ?? true,
+                'status' => $rev['status'] ?? 'approved',
+                'media' => $rev['media'] ?? null,
+                'created_at' => $rev['created_at'] ?? now(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => count($createdReviews).' reviews added successfully',
+            'count' => count($createdReviews),
+            'reviews' => $createdReviews,
+        ], 201);
+    }
+
+    public function storeReviewDirect(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'reviewer_name' => 'required|string|max:255',
+            'reviewer_email' => 'nullable|email|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+            'is_verified_purchase' => 'nullable|boolean',
+            'status' => 'nullable|in:approved,pending,spam',
+            'media' => 'nullable|array',
+            'media.*' => 'string',
+            'created_at' => 'nullable|date',
+        ]);
+
+        $review = Review::create([
+            'product_id' => $validated['product_id'],
+            'user_id' => null,
+            'reviewer_name' => $validated['reviewer_name'],
+            'reviewer_email' => $validated['reviewer_email'] ?? null,
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'] ?? null,
+            'is_verified_purchase' => $validated['is_verified_purchase'] ?? true,
+            'status' => $validated['status'] ?? 'approved',
+            'media' => $validated['media'] ?? null,
+            'created_at' => $validated['created_at'] ?? now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Review added successfully',
+            'review' => $review,
+        ], 201);
     }
 }
