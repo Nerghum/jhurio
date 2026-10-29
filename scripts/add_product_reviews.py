@@ -816,8 +816,8 @@ PRODUCT_REVIEWS = [
     # 15. Headed Massage Machine (ID: 2) - adding 4 more reviews to existing 3
     {
         "id": 2,
-        "slug": "headed-massage-machine",
-        "name": "Headed Massage Machine (ফ্যাসিয়া গান)",
+        "slug": "head-massage-machine",
+        "name": "Head Massage Machine (ফ্যাসিয়া গান)",
         "reviews": [
             {
                 "reviewer_name": "Enamul Haque",
