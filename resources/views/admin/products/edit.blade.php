@@ -1033,8 +1033,7 @@
 
 @push('scripts')
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 <style>
     .tox-tinymce {
@@ -1086,11 +1085,11 @@
                 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | removeformat',
                 'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link media_library image table | code fullscreen'
             ],
-            font_family_formats: 'Plus Jakarta Sans=Plus Jakarta Sans,sans-serif; Anek Bangla=Anek Bangla,sans-serif; Hind Siliguri=Hind Siliguri,sans-serif; Noto Sans Bengali=Noto Sans Bengali,sans-serif; Inter=Inter,sans-serif; Outfit=Outfit,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times;',
+            font_family_formats: 'Plus Jakarta Sans=Plus Jakarta Sans,sans-serif;',
             content_style: `
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Anek+Bangla:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
                 body {
-                    font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-family: 'Plus Jakarta Sans', sans-serif;
                     font-size: 15px;
                     line-height: 1.85;
                     color: ${isDark ? '#e5e7eb' : '#1f2937'};

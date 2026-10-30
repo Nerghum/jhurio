@@ -2,14 +2,6 @@
 
 @section('title', 'আমাদের সম্পর্কে - Jhurio')
 
-@push('scripts')
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-    .bangla-text {
-        font-family: 'Noto Sans Bengali', sans-serif;
-    }
-</style>
-@endpush
 
 @section('content')
 <div class="bg-gray-50 dark:bg-gray-900 py-8 sm:py-12 min-h-screen bangla-text">
