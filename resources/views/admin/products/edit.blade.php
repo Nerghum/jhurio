@@ -1086,11 +1086,11 @@
                 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | removeformat',
                 'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link media_library image table | code fullscreen'
             ],
-            font_family_formats: 'Anek Bangla=Anek Bangla,sans-serif; Hind Siliguri=Hind Siliguri,sans-serif; Noto Sans Bengali=Noto Sans Bengali,sans-serif; Inter=Inter,sans-serif; Outfit=Outfit,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times;',
+            font_family_formats: 'Plus Jakarta Sans=Plus Jakarta Sans,sans-serif; Anek Bangla=Anek Bangla,sans-serif; Hind Siliguri=Hind Siliguri,sans-serif; Noto Sans Bengali=Noto Sans Bengali,sans-serif; Inter=Inter,sans-serif; Outfit=Outfit,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times;',
             content_style: `
-                @import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Anek+Bangla:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
                 body {
-                    font-family: 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                     font-size: 15px;
                     line-height: 1.85;
                     color: ${isDark ? '#e5e7eb' : '#1f2937'};
