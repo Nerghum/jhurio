@@ -75,19 +75,19 @@
 
                         <!-- Categories -->
                         <div>
-                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wider">Categories</h3>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wider text-left">Categories</h3>
                             <div class="space-y-1">
                                 <button type="button" @click="setCategory('')" 
-                                   class="w-full flex justify-between items-center px-3 py-2.5 rounded-xl transition-all"
+                                   class="w-full flex justify-between items-center text-left px-3 py-2.5 rounded-xl transition-all"
                                    :class="category === '' ? 'bg-primary/10 text-primary font-bold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary font-medium'">
-                                    <span>All Categories</span>
+                                    <span class="text-left flex-1">All Categories</span>
                                 </button>
                                 @foreach($categories as $cat)
                                     <button type="button" @click="setCategory('{{ $cat->slug }}')" 
-                                       class="w-full flex justify-between items-center px-3 py-2.5 rounded-xl transition-all"
+                                       class="w-full flex justify-between items-center gap-2 text-left px-3 py-2.5 rounded-xl transition-all"
                                        :class="category === '{{ $cat->slug }}' ? 'bg-primary/10 text-primary font-bold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary font-medium'">
-                                        <span>{{ $cat->name }}</span>
-                                        <span class="bg-gray-100 dark:bg-gray-900 text-gray-500 text-xs py-1 px-2 rounded-lg font-bold">{{ $cat->products()->count() }}</span>
+                                        <span class="text-left flex-1 leading-snug">{{ $cat->name }}</span>
+                                        <span class="flex-shrink-0 ml-auto bg-gray-100 dark:bg-gray-900 text-gray-500 text-xs py-1 px-2 rounded-lg font-bold">{{ $cat->products()->count() }}</span>
                                     </button>
                                 @endforeach
                             </div>

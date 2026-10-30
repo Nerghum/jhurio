@@ -20,13 +20,13 @@
             <ul class="flex-1 overflow-y-auto custom-scrollbar p-2">
                 @foreach($categories as $category)
                     <li>
-                        <a href="{{ route('shop.index', ['category' => $category->slug]) }}" class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors group">
-                            <span class="flex items-center space-x-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-primary transition-colors"></span>
-                                <span>{{ $category->name }}</span>
+                        <a href="{{ route('shop.index', ['category' => $category->slug]) }}" class="flex items-center justify-between gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors group text-left">
+                            <span class="flex items-center space-x-2 text-left flex-1 min-w-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-primary transition-colors flex-shrink-0"></span>
+                                <span class="text-left truncate">{{ $category->name }}</span>
                             </span>
                             @if($category->products_count > 0)
-                                <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">{{ $category->products_count }}</span>
+                                <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full flex-shrink-0 ml-auto">{{ $category->products_count }}</span>
                             @endif
                         </a>
                     </li>
