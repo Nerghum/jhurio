@@ -101,7 +101,7 @@
                 </div>
                 
                 <!-- Reviews -->
-                <div class="flex items-center mb-2">
+                <div class="flex items-center mb-4 sm:mb-5">
                     <div class="flex text-yellow-400">
                         @for($i = 1; $i <= 5; $i++)
                             @if($i <= round($product->averageRating()))
@@ -115,35 +115,6 @@
                         <a href="#customer-reviews" class="hover:text-primary transition-colors">({{ $product->reviewsCount() }} reviews)</a>
                     </span>
                 </div>
-
-                <!-- Categories & Tags (Horizontal under review in one line, as link text, no label text, tight gap, no bottom margin) -->
-                @php
-                    $categoryLinks = collect();
-                    foreach ($product->categories as $category) {
-                        $categoryLinks->push([
-                            'name' => $category->name,
-                            'url' => route('shop.index', ['category' => $category->slug]),
-                        ]);
-                    }
-                    foreach ($product->tags as $tag) {
-                        $categoryLinks->push([
-                            'name' => $tag->name,
-                            'url' => route('shop.index', ['q' => $tag->name]),
-                        ]);
-                    }
-                @endphp
-
-                @if($categoryLinks->count() > 0)
-                    <!-- Desktop: Shown under review, hidden on mobile -->
-                    <div class="hidden lg:flex text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex-wrap items-center gap-y-0.5 mb-0">
-                        @foreach($categoryLinks as $index => $item)
-                            <a href="{{ $item['url'] }}" 
-                               class="text-primary hover:text-secondary dark:text-secondary dark:hover:text-primary font-medium hover:underline transition-colors">
-                                {{ $item['name'] }}
-                            </a>@if(!$loop->last)<span class="text-gray-400 dark:text-gray-500 mr-1.5">,</span>@endif
-                        @endforeach
-                    </div>
-                @endif
 
                 <!-- Price -->
                 <div class="mb-6 flex items-end gap-3">
@@ -447,9 +418,25 @@
                             </button>
                         </div>
 
-                        <!-- Categories (Mobile: Placed under Add to Cart / Buy Now buttons) -->
+                        <!-- Categories & Tags (Placed under Add to Cart / Buy Now buttons) -->
+                        @php
+                            $categoryLinks = collect();
+                            foreach ($product->categories as $category) {
+                                $categoryLinks->push([
+                                    'name' => $category->name,
+                                    'url' => route('shop.index', ['category' => $category->slug]),
+                                ]);
+                            }
+                            foreach ($product->tags as $tag) {
+                                $categoryLinks->push([
+                                    'name' => $tag->name,
+                                    'url' => route('shop.index', ['q' => $tag->name]),
+                                ]);
+                            }
+                        @endphp
+
                         @if($categoryLinks->count() > 0)
-                            <div class="mt-3.5 text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex lg:hidden flex-wrap items-center gap-y-0.5">
+                            <div class="mt-3.5 sm:mt-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-y-1">
                                 @foreach($categoryLinks as $index => $item)
                                     <a href="{{ $item['url'] }}" 
                                        class="text-primary hover:text-secondary dark:text-secondary dark:hover:text-primary font-medium hover:underline transition-colors">
