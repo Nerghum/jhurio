@@ -61,18 +61,31 @@ Before relying on a package's API, confirm its installed version:
 
 === product upload rules ===
 
-# Product Upload via API (Jhurio Live Site)
+# Product Upload & Store Management via CLI / API (Jhurio Live Site)
 
-When the user provides a product URL to upload/import to https://jhurio.com:
 - Target Site: https://jhurio.com
-- API Endpoint: POST https://jhurio.com/api/products
+- API Endpoint: https://jhurio.com/api
 - Authorization: Bearer prozRcAArjlDDhV8ZRI3qeVFKRYsIy8c
-- Follow instructions in PRODUCT_UPLOAD_INSTRUCTIONS.txt:
-  1. Scrape product data and images.
-  2. Remove image background with Python rembg, crop and center cleanly.
-  3. Save images to public/assets/images/products/<slug>/ and git push to main.
-  4. Rewrite title, short description, and full content in engaging Bangla (do not directly copy).
-  5. Include 2 Bangla image_text_sections with images and CTA buttons.
-  6. Send POST to https://jhurio.com/api/products and verify the live product URL.
+- Dedicated CLI Tool: `./jhurio-cli` or `php artisan jhurio:cli`
+- Full API & CLI Guide: See [API_DOCUMENTATION.md](file:///Users/ashik/Desktop/personal%20work/jhurio/API_DOCUMENTATION.md)
+
+CLI Quick Commands:
+- `./jhurio-cli ping` (health check)
+- `./jhurio-cli stats` (live store metrics)
+- `./jhurio-cli products list` (view live products table)
+- `./jhurio-cli products update <id> --price <val> --stock <val>`
+- `./jhurio-cli orders list --status pending`
+- `./jhurio-cli orders set-status <id> shipped`
+- `./jhurio-cli homepage set-hero --slider-image "<url>" --slider-link "/shop"`
+- `./jhurio-cli banners list` / `./jhurio-cli banners create --type slider --image-url "<url>"`
+- `./jhurio-cli settings set <key> <val>`
+
+When the user provides a product URL to upload/import:
+1. Scrape product data and images.
+2. Remove image background with Python rembg, crop and center cleanly.
+3. Save images to public/assets/images/products/<slug>/ and git push to main.
+4. Rewrite title, short description, and full content in engaging Bangla (do not directly copy).
+5. Include 2 Bangla image_text_sections with images and CTA buttons.
+6. Post product via CLI `./jhurio-cli products create --data '<json>'` or POST to https://jhurio.com/api/products and verify the live product URL.
 
 </laravel-boost-guidelines>

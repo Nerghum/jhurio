@@ -8,6 +8,7 @@ use App\Models\Media;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\Tag;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -17,27 +18,95 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function store(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        // Support listing products via POST /api/products { "action": "list_products" }
-        if ($request->input('action') === 'list_products' || $request->input('action') === 'get_products') {
-            $products = Product::with(['categories', 'tags', 'thumbnail'])
-                ->withCount(['reviews as approved_reviews_count' => function ($query) {
-                    $query->where('status', 'approved');
-                }])
-                ->with(['reviews' => function ($query) {
-                    $query->where('status', 'approved')->latest();
-                }])
-                ->latest()
-                ->get();
+        $query = Product::with(['categories', 'tags', 'thumbnail'])
+            ->withCount(['reviews as approved_reviews_count' => function ($query) {
+                $query->where('status', 'approved');
+            }]);
+
+        if ($request->filled('search')) {
+            $s = $request->input('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                    ->orWhere('slug', 'like', "%{$s}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('category')) {
+            $cat = $request->input('category');
+            $query->whereHas('categories', function ($q) use ($cat) {
+                if (is_numeric($cat)) {
+                    $q->where('categories.id', $cat);
+                } else {
+                    $q->where('categories.slug', $cat)->orWhere('categories.name', $cat);
+                }
+            });
+        }
+
+        if ($request->has('is_featured')) {
+            $query->where('is_featured', filter_var($request->input('is_featured'), FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $query->latest();
+
+        if ($request->has('limit')) {
+            $limit = min((int) $request->input('limit', 20), 100);
+            $products = $query->paginate($limit);
 
             return response()->json([
-                'total' => $products->count(),
-                'products' => $products,
+                'total' => $products->total(),
+                'products' => $products->items(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
             ]);
         }
 
-        // Support adding reviews via POST /api/products { "action": "add_reviews", "product_id": 19, "reviews": [...] }
+        $products = $query->get();
+
+        return response()->json([
+            'total' => $products->count(),
+            'products' => $products,
+        ]);
+    }
+
+    public function show(string|int $identifier): JsonResponse
+    {
+        $product = is_numeric($identifier)
+            ? Product::find($identifier)
+            : Product::where('slug', $identifier)->first();
+
+        if (! $product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        $product->load([
+            'categories',
+            'tags',
+            'thumbnail',
+            'gallery',
+            'stockPurchases',
+        ])->loadCount(['reviews as approved_reviews_count' => function ($query) {
+            $query->where('status', 'approved');
+        }]);
+
+        return response()->json([
+            'product' => $product,
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        // 1. Support listing products via POST /api/products { "action": "list_products" }
+        if ($request->input('action') === 'list_products' || $request->input('action') === 'get_products') {
+            return $this->index($request);
+        }
+
+        // 2. Support adding reviews via POST /api/products { "action": "add_reviews", ... }
         if ($request->input('action') === 'add_reviews' || ($request->has('reviews') && ($request->has('product_id') || $request->has('slug')))) {
             $product = null;
             if ($request->filled('product_id')) {
@@ -106,14 +175,19 @@ class ProductController extends Controller
             'content' => 'nullable|string',
             'image_text_sections' => 'nullable|array',
             'video_url' => 'nullable|string',
+            'video_reels' => 'nullable|array',
             'status' => 'nullable|in:draft,published,out_of_stock',
             'stock_quantity' => 'nullable|integer|min:0',
+            'is_featured' => 'nullable|boolean',
             'categories' => 'nullable|array',
-            'categories.*' => 'string', // array of category names
+            'categories.*' => 'string',
             'tags' => 'nullable|array',
             'tags.*' => 'string',
             'image_urls' => 'nullable|array',
             'image_urls.*' => 'url',
+            'thumbnail_media_id' => 'nullable|exists:media,id',
+            'bundle_settings' => 'nullable|array',
+            'options' => 'nullable|array',
         ]);
 
         $slug = ! empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($validated['name']);
@@ -156,8 +230,13 @@ class ProductController extends Controller
             'content' => $validated['content'] ?? null,
             'image_text_sections' => $imageTextSections,
             'video_url' => $validated['video_url'] ?? null,
+            'video_reels' => $validated['video_reels'] ?? null,
             'status' => $validated['status'] ?? 'published',
             'stock_quantity' => $validated['stock_quantity'] ?? 10,
+            'is_featured' => $validated['is_featured'] ?? false,
+            'thumbnail_media_id' => $validated['thumbnail_media_id'] ?? null,
+            'bundle_settings' => $validated['bundle_settings'] ?? null,
+            'options' => $validated['options'] ?? null,
         ]);
 
         // Attach categories
@@ -190,42 +269,7 @@ class ProductController extends Controller
 
         // Process images
         if (! empty($validated['image_urls'])) {
-            $sortOrder = 0;
-            foreach ($validated['image_urls'] as $index => $imageUrl) {
-                try {
-                    $imageContent = Http::timeout(20)->get($imageUrl)->body();
-
-                    if ($imageContent) {
-                        // Extract extension or default to png
-                        $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
-                        if (! $extension || ! in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
-                            $extension = 'png';
-                        }
-
-                        $filename = 'product-'.$product->id.'-'.Str::random(10).'.'.$extension;
-                        $path = 'media/'.$filename;
-
-                        Storage::disk('public')->put($path, $imageContent);
-
-                        $media = Media::create([
-                            'filename' => $filename,
-                            'file_path' => $path,
-                            'file_type' => 'image/'.($extension == 'jpg' ? 'jpeg' : $extension),
-                            'file_size' => strlen($imageContent),
-                        ]);
-
-                        // Set first image as thumbnail
-                        if ($index === 0) {
-                            $product->update(['thumbnail_media_id' => $media->id]);
-                        }
-
-                        // Attach to gallery
-                        $product->gallery()->attach($media->id, ['sort_order' => $sortOrder++]);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Failed to download image for product API: '.$imageUrl.' - '.$e->getMessage());
-                }
-            }
+            $this->processProductImages($product, $validated['image_urls']);
         }
 
         return response()->json([
@@ -234,8 +278,16 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, string|int $identifier): JsonResponse
     {
+        $product = is_numeric($identifier)
+            ? Product::find($identifier)
+            : Product::where('slug', $identifier)->first();
+
+        if (! $product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'slug' => 'nullable|string|max:255',
@@ -246,15 +298,22 @@ class ProductController extends Controller
             'content' => 'nullable|string',
             'image_text_sections' => 'nullable|array',
             'video_url' => 'nullable|string',
+            'video_reels' => 'nullable|array',
             'status' => 'nullable|in:draft,published,out_of_stock',
             'stock_quantity' => 'nullable|integer|min:0',
+            'is_featured' => 'nullable|boolean',
             'categories' => 'nullable|array',
             'categories.*' => 'string',
             'tags' => 'nullable|array',
             'tags.*' => 'string',
+            'image_urls' => 'nullable|array',
+            'image_urls.*' => 'url',
+            'thumbnail_media_id' => 'nullable|exists:media,id',
+            'bundle_settings' => 'nullable|array',
+            'options' => 'nullable|array',
         ]);
 
-        $product->update(array_filter([
+        $updateData = array_filter([
             'name' => $validated['name'] ?? null,
             'slug' => ! empty($validated['slug']) ? Str::slug($validated['slug']) : null,
             'price' => $validated['price'] ?? null,
@@ -262,11 +321,17 @@ class ProductController extends Controller
             'compare_at_price' => $validated['compare_at_price'] ?? null,
             'description' => $validated['description'] ?? null,
             'content' => $validated['content'] ?? null,
-            'image_text_sections' => array_key_exists('image_text_sections', $validated) ? $validated['image_text_sections'] : null,
             'video_url' => $validated['video_url'] ?? null,
+            'video_reels' => $validated['video_reels'] ?? null,
             'status' => $validated['status'] ?? null,
             'stock_quantity' => $validated['stock_quantity'] ?? null,
-        ], fn ($val) => ! is_null($val)));
+            'is_featured' => $validated['is_featured'] ?? null,
+            'thumbnail_media_id' => $validated['thumbnail_media_id'] ?? null,
+            'bundle_settings' => $validated['bundle_settings'] ?? null,
+            'options' => $validated['options'] ?? null,
+        ], fn ($val) => ! is_null($val));
+
+        $product->update($updateData);
 
         if (array_key_exists('image_text_sections', $validated)) {
             $product->update(['image_text_sections' => $validated['image_text_sections']]);
@@ -285,14 +350,39 @@ class ProductController extends Controller
             $product->categories()->sync($categoryIds);
         }
 
+        if (isset($validated['tags'])) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) {
+                $tag = Tag::firstOrCreate(
+                    ['name' => $tagName],
+                    ['slug' => Str::slug($tagName)]
+                );
+
+                return $tag->id;
+            })->toArray();
+
+            $product->tags()->sync($tagIds);
+        }
+
+        if (! empty($validated['image_urls'])) {
+            $this->processProductImages($product, $validated['image_urls']);
+        }
+
         return response()->json([
             'message' => 'Product updated successfully',
-            'product' => $product->load('categories', 'tags', 'thumbnail', 'gallery'),
+            'product' => $product->fresh()->load('categories', 'tags', 'thumbnail', 'gallery'),
         ]);
     }
 
-    public function destroy(Product $product)
+    public function destroy(string|int $identifier): JsonResponse
     {
+        $product = is_numeric($identifier)
+            ? Product::find($identifier)
+            : Product::where('slug', $identifier)->first();
+
+        if (! $product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
         $product->delete();
 
         return response()->json([
@@ -300,25 +390,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function index(Request $request)
-    {
-        $products = Product::with(['categories', 'tags', 'thumbnail'])
-            ->withCount(['reviews as approved_reviews_count' => function ($query) {
-                $query->where('status', 'approved');
-            }])
-            ->with(['reviews' => function ($query) {
-                $query->where('status', 'approved')->latest();
-            }])
-            ->latest()
-            ->get();
-
-        return response()->json([
-            'total' => $products->count(),
-            'products' => $products,
-        ]);
-    }
-
-    public function addReview(Request $request, Product $product)
+    public function addReview(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
             'reviewer_name' => 'required|string|max:255',
@@ -351,7 +423,7 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function addReviewsBatch(Request $request, Product $product)
+    public function addReviewsBatch(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
             'reviews' => 'required|array|min:1',
@@ -373,7 +445,7 @@ class ProductController extends Controller
                 'user_id' => null,
                 'reviewer_name' => $rev['reviewer_name'],
                 'reviewer_email' => $rev['reviewer_email'] ?? null,
-                'rating' => $rev['rating'],
+                'rating' => (int) $rev['rating'],
                 'comment' => $rev['comment'] ?? null,
                 'is_verified_purchase' => $rev['is_verified_purchase'] ?? true,
                 'status' => $rev['status'] ?? 'approved',
@@ -389,7 +461,7 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function storeReviewDirect(Request $request)
+    public function storeReviewDirect(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
@@ -421,5 +493,44 @@ class ProductController extends Controller
             'message' => 'Review added successfully',
             'review' => $review,
         ], 201);
+    }
+
+    protected function processProductImages(Product $product, array $imageUrls): void
+    {
+        $sortOrder = $product->gallery()->max('sort_order') ?? 0;
+        foreach ($imageUrls as $index => $imageUrl) {
+            try {
+                $imageContent = Http::timeout(20)->get($imageUrl)->body();
+
+                if ($imageContent) {
+                    $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
+                    if (! $extension || ! in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+                        $extension = 'png';
+                    }
+
+                    $filename = 'product-'.$product->id.'-'.Str::random(10).'.'.$extension;
+                    $path = 'media/'.$filename;
+
+                    Storage::disk('public')->put($path, $imageContent);
+
+                    $media = Media::create([
+                        'filename' => $filename,
+                        'file_path' => $path,
+                        'file_type' => 'image/'.($extension === 'jpg' ? 'jpeg' : $extension),
+                        'file_size' => strlen($imageContent),
+                    ]);
+
+                    // Set first image as thumbnail if not set
+                    if ($index === 0 && ! $product->thumbnail_media_id) {
+                        $product->update(['thumbnail_media_id' => $media->id]);
+                    }
+
+                    // Attach to gallery
+                    $product->gallery()->attach($media->id, ['sort_order' => ++$sortOrder]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to download image for product API: '.$imageUrl.' - '.$e->getMessage());
+            }
+        }
     }
 }

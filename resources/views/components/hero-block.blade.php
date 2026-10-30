@@ -35,13 +35,13 @@
         </div>
 
         <!-- Part 2: Main Slider -->
-        <div class="col-span-12 md:col-span-12 lg:col-span-6 rounded-xl overflow-hidden shadow-sm relative h-[300px] lg:h-[420px] group bg-gray-100 dark:bg-gray-800">
+        <div class="col-span-12 md:col-span-12 lg:col-span-6 rounded-xl overflow-hidden shadow-sm relative h-auto lg:h-[420px] group bg-gray-100 dark:bg-gray-800">
             @if(!empty($slider['image']))
-                <a href="{{ $slider['link'] ?? '#' }}" class="block w-full h-full">
-                    <img src="{{ $slider['image'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hero Banner">
+                <a href="{{ $slider['link'] ?? '#' }}" class="block w-full h-auto lg:h-full">
+                    <img src="{{ $slider['image'] }}" class="block w-full h-auto lg:h-full lg:object-cover transition-transform duration-700 group-hover:scale-105" alt="Hero Banner">
                 </a>
             @else
-                <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                <div class="w-full min-h-[200px] sm:min-h-[280px] lg:h-full flex flex-col items-center justify-center text-gray-400 py-12">
                     <i data-lucide="image" class="w-12 h-12 mb-2"></i>
                     <span>Configure Main Image</span>
                 </div>
