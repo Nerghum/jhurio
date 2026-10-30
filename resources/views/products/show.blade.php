@@ -418,19 +418,13 @@
                             </button>
                         </div>
 
-                        <!-- Categories & Tags (Placed under Add to Cart / Buy Now buttons) -->
+                        <!-- Categories (Placed under Add to Cart / Buy Now buttons) -->
                         @php
                             $categoryLinks = collect();
                             foreach ($product->categories as $category) {
                                 $categoryLinks->push([
                                     'name' => $category->name,
                                     'url' => route('shop.index', ['category' => $category->slug]),
-                                ]);
-                            }
-                            foreach ($product->tags as $tag) {
-                                $categoryLinks->push([
-                                    'name' => $tag->name,
-                                    'url' => route('shop.index', ['q' => $tag->name]),
                                 ]);
                             }
                         @endphp
