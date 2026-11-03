@@ -42,8 +42,12 @@ Route::middleware(['api.auth'])->group(function () {
     Route::match(['put', 'patch'], '/categories/{identifier}', [CategoryController::class, 'update']);
     Route::delete('/categories/{identifier}', [CategoryController::class, 'destroy']);
 
+    // Delivery Methods
+    Route::get('/delivery-methods', [OrderController::class, 'deliveryMethods']);
+
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::match(['put', 'patch'], '/orders/{id}', [OrderController::class, 'update']);
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
@@ -85,6 +89,7 @@ Route::middleware(['api.auth'])->group(function () {
     // Coupons
     Route::get('/coupons', [CouponController::class, 'index']);
     Route::post('/coupons', [CouponController::class, 'store']);
+    Route::post('/coupons/apply', [CouponController::class, 'apply']);
     Route::get('/coupons/{id}', [CouponController::class, 'show']);
     Route::match(['put', 'patch'], '/coupons/{id}', [CouponController::class, 'update']);
     Route::delete('/coupons/{id}', [CouponController::class, 'destroy']);

@@ -99,4 +99,50 @@ class CouponController extends Controller
             'message' => 'Coupon deleted successfully',
         ]);
     }
+
+    public function apply(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'order_total' => 'required|numeric|min:0',
+        ]);
+
+        $coupon = Coupon::where('code', strtoupper($request->code))
+            ->where('is_active', true)
+            ->first();
+
+        if (! $coupon) {
+            return response()->json(['success' => false, 'message' => 'Invalid coupon code.'], 404);
+        }
+
+        if ($coupon->expires_at && $coupon->expires_at->isPast()) {
+            return response()->json(['success' => false, 'message' => 'This coupon has expired.'], 422);
+        }
+
+        if ($coupon->usage_limit && $coupon->times_used >= $coupon->usage_limit) {
+            return response()->json(['success' => false, 'message' => 'Coupon usage limit reached.'], 422);
+        }
+
+        if ($coupon->min_order_value && $request->order_total < $coupon->min_order_value) {
+            return response()->json(['success' => false, 'message' => 'Minimum order value of ৳'.$coupon->min_order_value.' required.'], 422);
+        }
+
+        $discountAmount = ($coupon->type === 'fixed')
+            ? (float) $coupon->value
+            : ($request->order_total * (float) $coupon->value) / 100;
+
+        if ($discountAmount > $request->order_total) {
+            $discountAmount = $request->order_total;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Coupon applied successfully!',
+            'coupon_code' => $coupon->code,
+            'type' => $coupon->type,
+            'value' => (float) $coupon->value,
+            'discount_amount' => round($discountAmount, 2),
+            'final_total' => round($request->order_total - $discountAmount, 2),
+        ]);
+    }
 }
