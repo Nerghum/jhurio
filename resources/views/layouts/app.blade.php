@@ -80,14 +80,14 @@
 <body class="bg-gray-50 dark:bg-darker text-gray-800 dark:text-gray-200 transition-colors duration-300" x-data="cartState()">
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 glassmorphism shadow-sm">
+    <nav class="fixed top-0 left-0 right-0 w-full z-50 glassmorphism shadow-sm transition-transform duration-300 ease-in-out" :class="showHeader ? 'translate-y-0' : '-translate-y-full'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
+            <div class="flex justify-between items-center py-[15px] md:py-0 md:h-20">
                 
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center cursor-pointer">
                     <a href="/" class="flex-shrink-0 flex items-center">
-                        <img src="{{ asset('assets/images/logo.png') }}" alt="Jhurio" class="h-10 w-auto">
+                        <img src="{{ asset('assets/images/logo.png') }}" alt="Jhurio" class="h-[24px] md:h-10 w-auto object-contain">
                     </a>
                 </div>
                 
@@ -278,10 +278,10 @@
 
                 <!-- Mobile Buttons -->
                 <div class="md:hidden flex items-center space-x-1">
-                    <button @click="mobileSearchOpen = !mobileSearchOpen" class="text-gray-600 dark:text-gray-300 focus:outline-none p-2">
+                    <button @click="mobileSearchOpen = !mobileSearchOpen" class="text-gray-600 dark:text-gray-300 focus:outline-none py-0 px-2 flex items-center justify-center" aria-label="Search">
                         <i data-lucide="search" class="w-6 h-6"></i>
                     </button>
-                    <button @click="mobileMenuOpen = true" class="text-gray-600 dark:text-gray-300 focus:outline-none p-2">
+                    <button @click="mobileMenuOpen = true" class="text-gray-600 dark:text-gray-300 focus:outline-none py-0 px-2 flex items-center justify-center" aria-label="Menu">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
@@ -343,7 +343,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="pt-20 min-h-screen">
+    <main class="pt-[54px] md:pt-20 min-h-screen">
         @yield('content')
     </main>
 
@@ -422,7 +422,7 @@
         </div>
 
         <!-- Bottom Bar -->
-        <div class="border-t border-gray-100 dark:border-gray-800 pb-16 md:pb-0">
+        <div class="border-t border-gray-100 dark:border-gray-800 pb-[46px] md:pb-0">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center md:text-left">
                     &copy; {{ date('Y') }} LuxeCart. All rights reserved.
@@ -437,25 +437,25 @@
     </footer>
 
     <!-- Mobile Bottom Menu -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex justify-around items-center py-2 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
-        <a href="/" class="flex flex-col items-center p-2 text-gray-500 hover:text-primary transition-colors {{ request()->is('/') ? 'text-primary' : '' }}">
-            <i data-lucide="home" class="w-6 h-6 mb-1"></i>
-            <span class="text-[10px] font-medium">Home</span>
+    <div class="md:hidden fixed bottom-0 left-0 right-0 h-[46px] bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex justify-around items-center z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+        <a href="/" class="flex flex-col items-center justify-center flex-1 h-full py-1 text-gray-500 hover:text-primary transition-colors {{ request()->is('/') ? 'text-primary' : '' }}">
+            <i data-lucide="home" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[10px] font-medium leading-none">Home</span>
         </a>
-        <a href="{{ route('shop.index') }}" class="flex flex-col items-center p-2 text-gray-500 hover:text-primary transition-colors {{ request()->routeIs('shop.index') ? 'text-primary' : '' }}">
-            <i data-lucide="layout-grid" class="w-6 h-6 mb-1"></i>
-            <span class="text-[10px] font-medium">Shop</span>
+        <a href="{{ route('shop.index') }}" class="flex flex-col items-center justify-center flex-1 h-full py-1 text-gray-500 hover:text-primary transition-colors {{ request()->routeIs('shop.index') ? 'text-primary' : '' }}">
+            <i data-lucide="layout-grid" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[10px] font-medium leading-none">Shop</span>
         </a>
-        <a href="#" @click.prevent="isOpen = true" class="flex flex-col items-center p-2 text-gray-500 hover:text-primary transition-colors relative">
-            <div class="relative">
-                <i data-lucide="shopping-cart" class="w-6 h-6 mb-1"></i>
-                <span x-text="totalItems" x-show="totalItems > 0" x-cloak class="absolute -top-1.5 -right-1.5 bg-secondary text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-xl">0</span>
+        <a href="#" @click.prevent="isOpen = true" class="flex flex-col items-center justify-center flex-1 h-full py-1 text-gray-500 hover:text-primary transition-colors relative">
+            <div class="relative flex items-center justify-center">
+                <i data-lucide="shopping-cart" class="w-5 h-5 mb-0.5"></i>
+                <span x-text="totalItems" x-show="totalItems > 0" x-cloak class="absolute -top-1.5 -right-2 bg-secondary text-white text-[9px] font-bold h-3.5 min-w-[14px] px-1 flex items-center justify-center rounded-full leading-none">0</span>
             </div>
-            <span class="text-[10px] font-medium">Cart</span>
+            <span class="text-[10px] font-medium leading-none">Cart</span>
         </a>
-        <a href="{{ route('account.orders') }}" class="flex flex-col items-center p-2 text-gray-500 hover:text-primary transition-colors {{ request()->routeIs('account.*') ? 'text-primary font-bold' : '' }}">
-            <i data-lucide="user" class="w-6 h-6 mb-1 {{ request()->routeIs('account.*') ? 'stroke-[2.5]' : '' }}"></i>
-            <span class="text-[10px] font-medium">Account</span>
+        <a href="{{ route('account.orders') }}" class="flex flex-col items-center justify-center flex-1 h-full py-1 text-gray-500 hover:text-primary transition-colors {{ request()->routeIs('account.*') ? 'text-primary font-bold' : '' }}">
+            <i data-lucide="user" class="w-5 h-5 mb-0.5 {{ request()->routeIs('account.*') ? 'stroke-[2.5]' : '' }}"></i>
+            <span class="text-[10px] font-medium leading-none">Account</span>
         </a>
     </div>
 
@@ -522,17 +522,57 @@
                 isOpen: false,
                 mobileMenuOpen: false,
                 mobileSearchOpen: false,
+                showHeader: true,
+                lastScrollY: 0,
                 items: [],
                 totalItems: 0,
                 totalPrice: 0,
                 
                 init() {
                     this.fetchCart();
+                    this.lastScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop);
                     
                     // Listen for global event to add item
                     window.addEventListener('add-to-cart', (e) => {
                         this.addToCart(e.detail);
                     });
+
+                    // Hide header on scroll down, show on scroll top/up
+                    window.addEventListener('scroll', () => {
+                        const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+                        // Never hide if mobile search/menu drawer is open or an input is focused
+                        if (this.mobileSearchOpen || this.mobileMenuOpen || (document.activeElement && document.activeElement.tagName === 'INPUT')) {
+                            this.showHeader = true;
+                            this.lastScrollY = Math.max(0, currentScrollY);
+                            return;
+                        }
+
+                        // Always show near the top of the page
+                        if (currentScrollY <= 20) {
+                            this.showHeader = true;
+                            this.lastScrollY = Math.max(0, currentScrollY);
+                            return;
+                        }
+
+                        // Prevent bounce at bottom on mobile
+                        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                        if (currentScrollY > maxScroll) {
+                            return;
+                        }
+
+                        const diff = currentScrollY - this.lastScrollY;
+                        if (Math.abs(diff) > 8) {
+                            if (diff > 0 && currentScrollY > 60) {
+                                // Scrolling down
+                                this.showHeader = false;
+                            } else if (diff < 0) {
+                                // Scrolling up
+                                this.showHeader = true;
+                            }
+                            this.lastScrollY = Math.max(0, currentScrollY);
+                        }
+                    }, { passive: true });
                 },
                 
                 async fetchCart() {
