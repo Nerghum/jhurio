@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useRef } from 'react';
 import {
+  Animated,
   Pressable,
   StyleSheet,
   Text,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 
 import { Config } from '@/constants/config';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Radius, Shadow, Spacing } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/types';
 
@@ -26,12 +27,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const { addToCart } = useCart();
 
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const addScaleAnim = useRef(new Animated.Value(1)).current;
+
   const handleCardPress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, { toValue: 0.97, duration: 80, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
+    ]).start();
     if (onPress) {
       onPress();
     } else {
       router.push(`/product/${product.slug || product.id}` as any);
     }
+  };
+
+  const handleAddToCart = (e: any) => {
+    e.stopPropagation();
+    Animated.sequence([
+      Animated.timing(addScaleAnim, { toValue: 0.85, duration: 100, useNativeDriver: true }),
+      Animated.spring(addScaleAnim, { toValue: 1, useNativeDriver: true, damping: 10 }),
+    ]).start();
+    addToCart(product, 1);
   };
 
   const priceNum = Number(product.price);
@@ -44,93 +61,79 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
   const imageUrl = product.thumbnail?.url || 'https://jhurio.com/assets/images/placeholder.png';
 
   return (
-    <Pressable
-      onPress={handleCardPress}
-      style={({ pressed }) => [
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
-        },
-      ]}>
-      {/* Product Thumbnail */}
-      <View style={[styles.imageContainer, { backgroundColor: colors.backgroundElement }]}>
-        <Image
-          source={{ uri: imageUrl }}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-        />
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        onPress={handleCardPress}
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            ...Shadow.sm,
+          },
+        ]}>
+        {/* Product Thumbnail */}
+        <View style={[styles.imageContainer, { backgroundColor: colors.backgroundElement }]}>
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+          />
 
-        {/* Discount Badge */}
-        {hasDiscount && (
-          <View style={[styles.discountBadge, { backgroundColor: colors.danger }]}>
-            <Text style={styles.discountBadgeText}>-{discountPercent}%</Text>
+          {/* Top badges */}
+          <View style={styles.badgeRow}>
+            {hasDiscount && (
+              <View style={[styles.badge, { backgroundColor: colors.danger }]}>
+                <Text style={styles.badgeText}>-{discountPercent}%</Text>
+              </View>
+            )}
+            {product.is_featured && !hasDiscount && (
+              <View style={[styles.badge, { backgroundColor: colors.accent }]}>
+                <Text style={styles.badgeText}>🔥</Text>
+              </View>
+            )}
           </View>
-        )}
 
-        {/* Featured Tag */}
-        {product.is_featured && !hasDiscount && (
-          <View style={[styles.discountBadge, { backgroundColor: colors.accent }]}>
-            <Text style={styles.discountBadgeText}>HOT</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Info Section */}
-      <View style={styles.info}>
-        <Text
-          numberOfLines={2}
-          style={[styles.title, { color: colors.text }]}>
-          {product.name}
-        </Text>
-
-        {/* Pricing */}
-        <View style={styles.priceRow}>
-          <Text style={[styles.price, { color: colors.primary }]}>
-            {Config.CURRENCY}{priceNum.toLocaleString()}
-          </Text>
-          {hasDiscount && (
-            <Text style={[styles.comparePrice, { color: colors.textMuted }]}>
-              {Config.CURRENCY}{compareNum.toLocaleString()}
-            </Text>
-          )}
+          {/* Quick Add Button */}
+          <Animated.View style={[styles.addBtnFloat, { transform: [{ scale: addScaleAnim }] }]}>
+            <Pressable
+              onPress={handleAddToCart}
+              style={[styles.addBtnFloatInner, { backgroundColor: colors.primary }]}>
+              <Ionicons name="add" size={18} color="#fff" />
+            </Pressable>
+          </Animated.View>
         </View>
 
-        {/* Add to Cart Action */}
-        <Pressable
-          onPress={(e) => {
-            e.stopPropagation();
-            addToCart(product, 1);
-          }}
-          style={({ pressed }) => [
-            styles.addButton,
-            {
-              backgroundColor: colors.primary,
-              opacity: pressed ? 0.85 : 1,
-            },
-          ]}>
-          <Ionicons name="cart-outline" size={16} color="#ffffff" style={styles.addIcon} />
-          <Text style={styles.addButtonText}>Add to Cart</Text>
-        </Pressable>
-      </View>
-    </Pressable>
+        {/* Info Section */}
+        <View style={styles.info}>
+          <Text numberOfLines={2} style={[styles.title, { color: colors.text }]}>
+            {product.name}
+          </Text>
+
+          <View style={styles.priceRow}>
+            <Text style={[styles.price, { color: colors.primary }]}>
+              {Config.CURRENCY}{priceNum.toLocaleString()}
+            </Text>
+            {hasDiscount && (
+              <Text style={[styles.comparePrice, { color: colors.textMuted }]}>
+                {Config.CURRENCY}{compareNum.toLocaleString()}
+              </Text>
+            )}
+          </View>
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: Radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
     flex: 1,
-    margin: Spacing.one,
+    margin: Spacing.one + 2,
   },
   imageContainer: {
     width: '100%',
@@ -142,59 +145,63 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  discountBadge: {
+  badgeRow: {
     position: 'absolute',
     top: 8,
     left: 8,
+    flexDirection: 'row',
+    gap: 4,
+  },
+  badge: {
     paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: 6,
   },
-  discountBadgeText: {
+  badgeText: {
     color: '#ffffff',
     fontSize: 10,
     fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  addBtnFloat: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+  },
+  addBtnFloatInner: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
   info: {
-    padding: Spacing.three,
-    flex: 1,
-    justifyContent: 'space-between',
+    padding: Spacing.two + 4,
   },
   title: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
-    lineHeight: 18,
-    minHeight: 36,
+    lineHeight: 17,
+    minHeight: 34,
+    marginBottom: 4,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 6,
-    marginTop: Spacing.two,
-    marginBottom: Spacing.two,
+    gap: 5,
+    flexWrap: 'wrap',
   },
   price: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
   },
   comparePrice: {
-    fontSize: 12,
+    fontSize: 11,
     textDecorationLine: 'line-through',
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: Spacing.one,
-  },
-  addIcon: {
-    marginRight: 4,
-  },
-  addButtonText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
   },
 });

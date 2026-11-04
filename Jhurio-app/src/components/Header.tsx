@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useRef } from 'react';
 import {
+  Animated,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -10,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Radius, Shadow, Spacing } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 
 interface HeaderProps {
@@ -18,6 +20,8 @@ interface HeaderProps {
   onSearchChange?: (text: string) => void;
   onSubmitSearch?: () => void;
   showSearchBar?: boolean;
+  title?: string;
+  showBack?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,59 +29,89 @@ export const Header: React.FC<HeaderProps> = ({
   onSearchChange,
   onSubmitSearch,
   showSearchBar = true,
+  title,
+  showBack = false,
 }) => {
   const router = useRouter();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const { itemCount } = useCart();
 
+  const cartScaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handleCartPress = () => {
+    Animated.sequence([
+      Animated.timing(cartScaleAnim, { toValue: 0.85, duration: 100, useNativeDriver: true }),
+      Animated.spring(cartScaleAnim, { toValue: 1, useNativeDriver: true }),
+    ]).start();
+    router.push('/cart');
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-      {/* Top Bar: Brand Logo & Cart Icon */}
+      {/* Top Row */}
       <View style={styles.topRow}>
-        <Pressable onPress={() => router.push('/')} style={styles.brandContainer}>
-          <Text style={[styles.brandPrefix, { color: colors.text }]}>Jhurio</Text>
-          <View style={[styles.brandBadge, { backgroundColor: colors.primary }]}>
-            <Text style={styles.brandBadgeText}>SHOP</Text>
+        {showBack ? (
+          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+        ) : (
+          <View style={styles.logoWrap}>
+            <View style={[styles.logoIcon, { backgroundColor: colors.primary }]}>
+              <Text style={styles.logoLetter}>J</Text>
+            </View>
+            <View>
+              <Text style={[styles.logoText, { color: colors.text }]}>Jhurio</Text>
+              <Text style={[styles.logoSub, { color: colors.textMuted }]}>Shop Smart 🛍️</Text>
+            </View>
           </View>
-        </Pressable>
+        )}
 
-        <View style={styles.actionsRow}>
+        {title ? (
+          <Text style={[styles.titleText, { color: colors.text }]}>{title}</Text>
+        ) : null}
+
+        <View style={styles.actions}>
+          {/* Notifications */}
           <Pressable
-            onPress={() => router.push('/orders')}
-            style={[styles.iconButton, { backgroundColor: colors.backgroundElement }]}>
-            <Ionicons name="receipt-outline" size={20} color={colors.text} />
+            style={[styles.iconBtn, { backgroundColor: colors.backgroundElement }]}
+            hitSlop={8}>
+            <Ionicons name="notifications-outline" size={20} color={colors.text} />
           </Pressable>
 
-          <Pressable
-            onPress={() => router.push('/cart')}
-            style={[styles.iconButton, { backgroundColor: colors.backgroundElement }]}>
-            <Ionicons name="bag-handle-outline" size={20} color={colors.text} />
-            {itemCount > 0 && (
-              <View style={[styles.badge, { backgroundColor: colors.danger }]}>
-                <Text style={styles.badgeText}>{itemCount > 9 ? '9+' : itemCount}</Text>
-              </View>
-            )}
-          </Pressable>
+          {/* Cart */}
+          <Animated.View style={{ transform: [{ scale: cartScaleAnim }] }}>
+            <Pressable
+              onPress={handleCartPress}
+              style={[styles.iconBtn, { backgroundColor: colors.backgroundElement }]}
+              hitSlop={8}>
+              <Ionicons name="cart-outline" size={20} color={colors.text} />
+              {itemCount > 0 && (
+                <View style={[styles.badge, { backgroundColor: colors.danger }]}>
+                  <Text style={styles.badgeText}>{itemCount > 99 ? '99+' : itemCount}</Text>
+                </View>
+              )}
+            </Pressable>
+          </Animated.View>
         </View>
       </View>
 
-      {/* Search Bar Input */}
+      {/* Search Bar */}
       {showSearchBar && (
-        <View style={[styles.searchBox, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
-          <Ionicons name="search-outline" size={18} color={colors.textSecondary} style={styles.searchIcon} />
+        <View style={[styles.searchContainer, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+          <Ionicons name="search-outline" size={18} color={colors.textMuted} style={styles.searchIcon} />
           <TextInput
-            placeholder="Search products in Jhurio..."
-            placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={onSearchChange}
             onSubmitEditing={onSubmitSearch}
+            placeholder="Search products..."
+            placeholderTextColor={colors.textMuted}
             returnKeyType="search"
             style={[styles.searchInput, { color: colors.text }]}
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => onSearchChange && onSearchChange('')} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={16} color={colors.textSecondary} />
+            <Pressable onPress={() => onSearchChange?.('')} hitSlop={8}>
+              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
             </Pressable>
           )}
         </View>
@@ -88,74 +122,97 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.three,
+    paddingTop: Platform.OS === 'android' ? Spacing.two : 0,
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    ...Shadow.sm,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: Spacing.two,
+    minHeight: 44,
   },
-  brandContainer: {
-    flexDirection: 'row',
+  backBtn: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
-    gap: Spacing.one,
+    justifyContent: 'center',
+    borderRadius: Radius.full,
   },
-  brandPrefix: {
-    fontSize: 22,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-  brandBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  brandBadgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  actionsRow: {
+  logoWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+    flex: 1,
   },
-  iconButton: {
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoLetter: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  logoSub: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  titleText: {
+    fontSize: 17,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    alignItems: 'center',
+  },
+  iconBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: -4,
+    right: -4,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   badgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '800',
   },
-  searchBox: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: Radius.lg,
     paddingHorizontal: Spacing.three,
     height: 42,
+    borderWidth: 1,
   },
   searchIcon: {
     marginRight: Spacing.two,
@@ -163,10 +220,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    height: '100%',
+    fontWeight: '500',
     padding: 0,
-  },
-  clearButton: {
-    padding: 4,
   },
 });
