@@ -78,4 +78,19 @@
         window.jhurioTrack('page_view');
     });
 
+    // Periodic heartbeat to keep live active user status fresh while tab is active
+    setInterval(function() {
+        if (!document.hidden) {
+            window.jhurioTrack('heartbeat');
+        }
+    }, 30000);
+
+    // Refresh on tab focus
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            window.jhurioTrack('heartbeat');
+        }
+    });
+
 })();
+

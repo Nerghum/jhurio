@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TrackingEvent;
 use App\Models\TrackingSession;
 use App\Models\TrackingVisitor;
+use App\Services\GeoIpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -33,10 +34,13 @@ class TrackingController extends Controller
 
         // Resolve Visitor
         $visitor = TrackingVisitor::where('visitor_id', $visitorId)->first();
+        $cfCountry = $request->header('CF-IPCountry');
 
         if (! $visitor) {
             $agent = new Agent;
             $agent->setUserAgent($userAgent);
+
+            $geo = GeoIpService::resolve($clientIp);
 
             $visitor = TrackingVisitor::create([
                 'visitor_id' => $visitorId ?: (string) Str::uuid(),
@@ -44,6 +48,11 @@ class TrackingController extends Controller
                 'user_agent' => $userAgent,
                 'first_seen_at' => now(),
                 'last_seen_at' => now(),
+                'country' => (! empty($geo['country']) && $geo['country'] !== 'Unknown') ? $geo['country'] : ($cfCountry === 'BD' ? 'Bangladesh' : null),
+                'division' => $geo['division'] ?? null,
+                'city' => $geo['city'] ?? null,
+                'lat' => $geo['lat'] ?? null,
+                'lon' => $geo['lon'] ?? null,
                 'device' => $this->getDeviceType($agent),
                 'browser' => $agent->browser(),
                 'os' => $agent->platform(),
@@ -51,20 +60,49 @@ class TrackingController extends Controller
                 'language' => $request->input('language'),
                 'first_source' => $request->input('url'),
             ]);
-
-            // Resolve location async or inline using caching
-            $this->resolveLocation($visitor, $clientIp);
         } else {
             $visitorUpdates = ['last_seen_at' => now()];
-            if (empty($visitor->ip_address) && $clientIp) {
+
+            if ($clientIp) {
                 $visitorUpdates['ip_address'] = $clientIp;
             }
-            if (empty($visitor->user_agent) && $userAgent) {
+            if ($userAgent && empty($visitor->user_agent)) {
                 $visitorUpdates['user_agent'] = $userAgent;
             }
-            if (empty($visitor->country) && $clientIp && $clientIp !== '127.0.0.1' && $clientIp !== '::1') {
-                $this->resolveLocation($visitor, $clientIp);
+            if ($request->filled('screen_size') && empty($visitor->screen_size)) {
+                $visitorUpdates['screen_size'] = $request->input('screen_size');
             }
+            if ($request->filled('language') && empty($visitor->language)) {
+                $visitorUpdates['language'] = $request->input('language');
+            }
+
+            if (empty($visitor->country) && $clientIp) {
+                $geo = GeoIpService::resolve($clientIp);
+                if (! empty($geo['country']) && $geo['country'] !== 'Unknown') {
+                    $visitorUpdates['country'] = $geo['country'];
+                    $visitorUpdates['division'] = $geo['division'] ?? $visitor->division;
+                    $visitorUpdates['city'] = $geo['city'] ?? $visitor->city;
+                    $visitorUpdates['lat'] = $geo['lat'] ?? $visitor->lat;
+                    $visitorUpdates['lon'] = $geo['lon'] ?? $visitor->lon;
+                } elseif ($cfCountry === 'BD') {
+                    $visitorUpdates['country'] = 'Bangladesh';
+                }
+            }
+
+            if (empty($visitor->device) || empty($visitor->browser) || empty($visitor->os)) {
+                $agent = new Agent;
+                $agent->setUserAgent($userAgent ?: $visitor->user_agent);
+                if (empty($visitor->device)) {
+                    $visitorUpdates['device'] = $this->getDeviceType($agent);
+                }
+                if (empty($visitor->browser)) {
+                    $visitorUpdates['browser'] = $agent->browser();
+                }
+                if (empty($visitor->os)) {
+                    $visitorUpdates['os'] = $agent->platform();
+                }
+            }
+
             $visitor->update($visitorUpdates);
         }
 

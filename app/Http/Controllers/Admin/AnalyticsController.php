@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\TrackingEvent;
 use App\Models\TrackingSession;
 use App\Models\TrackingVisitor;
+use App\Services\GeoIpService;
 use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
@@ -36,26 +37,185 @@ class AnalyticsController extends Controller
         $todayCheckout = TrackingEvent::where('created_at', '>=', $today)->where('event_type', 'checkout_start')->count();
         $todayPurchases = TrackingEvent::where('created_at', '>=', $today)->where('event_type', 'purchase')->count();
 
-        // 3. Live Feed (Last 20 events)
+        // Helper to format visitor details with IP, location, device, and active status
+        $formatVisitor = function (TrackingVisitor $visitor) use ($now) {
+            $latestSession = $visitor->sessions->first();
+            $latestEvent = $visitor->events->first();
+            $totalSessions = $visitor->sessions()->count();
+            $totalEvents = $visitor->events()->where('event_type', '!=', 'heartbeat')->count();
+
+            $secondsAgo = $visitor->last_seen_at ? max(0, $now->timestamp - $visitor->last_seen_at->timestamp) : null;
+            $isActiveNow = ($secondsAgo !== null && $secondsAgo <= 180); // Active within 3 minutes
+
+            if ($secondsAgo !== null && $secondsAgo < 30) {
+                $lastSeenHuman = 'Active Just Now';
+            } elseif ($secondsAgo !== null && $secondsAgo < 60) {
+                $lastSeenHuman = $secondsAgo.'s ago';
+            } elseif ($secondsAgo !== null && $secondsAgo < 3600) {
+                $lastSeenHuman = floor($secondsAgo / 60).'m ago';
+            } else {
+                $lastSeenHuman = $visitor->last_seen_at ? $visitor->last_seen_at->diffForHumans() : 'Unknown';
+            }
+
+            // Ensure location is resolved if empty and not localhost
+            $country = $visitor->country;
+            $city = $visitor->city;
+            $division = $visitor->division;
+            $lat = $visitor->lat;
+            $lon = $visitor->lon;
+            $flag = GeoIpService::getFlag(null, $country);
+
+            if (empty($country) && $visitor->ip_address) {
+                $geo = GeoIpService::resolve($visitor->ip_address);
+                if (! empty($geo['country']) && $geo['country'] !== 'Unknown') {
+                    $country = $geo['country'];
+                    $city = $geo['city'] ?: $city;
+                    $division = $geo['division'] ?: $division;
+                    $flag = $geo['flag'];
+                    $lat = $geo['lat'] ?? $lat;
+                    $lon = $geo['lon'] ?? $lon;
+                    $visitor->update([
+                        'country' => $country,
+                        'city' => $city,
+                        'division' => $division,
+                        'lat' => $lat,
+                        'lon' => $lon,
+                    ]);
+                } elseif ($geo['is_local'] ?? false) {
+                    $country = 'Localhost';
+                    $city = 'Local Network';
+                    $flag = '💻';
+                }
+            }
+
+            $locationDisplay = trim(($city ? $city.', ' : '').($country ?: 'Unknown Location'), ', ');
+            $deviceType = ucfirst(strtolower($visitor->device ?: 'Desktop'));
+            $deviceIcon = match (strtolower($visitor->device ?: '')) {
+                'mobile' => 'smartphone',
+                'tablet' => 'tablet',
+                default => 'monitor'
+            };
+
+            $currentPageUrl = $latestEvent ? $latestEvent->page_url : ($latestSession ? $latestSession->exit_page : $visitor->first_source);
+            $currentPageTitle = GeoIpService::formatPageTitle($currentPageUrl);
+
+            // Calculate duration
+            $durationSeconds = $latestSession ? (int) $latestSession->duration : 0;
+            if ($durationSeconds >= 60) {
+                $durationHuman = floor($durationSeconds / 60).'m '.($durationSeconds % 60).'s';
+            } else {
+                $durationHuman = $durationSeconds.'s';
+            }
+
+            return [
+                'id' => $visitor->id,
+                'visitor_id' => $visitor->visitor_id,
+                'ip_address' => $visitor->ip_address ?: 'Unknown IP',
+                'country' => $country ?: 'Unknown',
+                'division' => $division ?: '',
+                'city' => $city ?: 'Unknown City',
+                'location_display' => $locationDisplay,
+                'flag' => $flag,
+                'lat' => $lat ? round((float) $lat, 4) : null,
+                'lon' => $lon ? round((float) $lon, 4) : null,
+                'has_coordinates' => ! empty($lat) && ! empty($lon),
+                'device' => $deviceType,
+                'device_icon' => $deviceIcon,
+                'browser' => $visitor->browser ?: 'Browser',
+                'os' => $visitor->os ?: 'OS',
+                'screen_size' => $visitor->screen_size ?: 'Standard',
+                'language' => $visitor->language ?: 'en',
+                'user_agent' => $visitor->user_agent ?: 'Standard User Agent',
+                'first_seen_at' => $visitor->first_seen_at ? $visitor->first_seen_at->toIso8601String() : null,
+                'first_seen_human' => $visitor->first_seen_at ? $visitor->first_seen_at->diffForHumans() : 'Unknown',
+                'last_seen_at' => $visitor->last_seen_at ? $visitor->last_seen_at->toIso8601String() : null,
+                'last_seen_human' => $lastSeenHuman,
+                'seconds_ago' => $secondsAgo ?? 99999,
+                'is_active_now' => $isActiveNow,
+                'is_returning' => $totalSessions > 1,
+                'total_sessions' => max(1, $totalSessions),
+                'total_events' => $totalEvents,
+                'current_page' => $currentPageUrl ?: '/',
+                'current_page_title' => $currentPageTitle,
+                'latest_event_type' => $latestEvent ? $latestEvent->event_type : 'page_view',
+                'latest_product' => ($latestEvent && $latestEvent->product) ? $latestEvent->product->name : null,
+                'traffic_source' => $latestSession ? ($latestSession->traffic_source ?: 'Direct') : 'Direct',
+                'session_duration' => $durationHuman,
+                'recent_events' => $visitor->events->map(function ($ev) {
+                    return [
+                        'id' => $ev->id,
+                        'type' => $ev->event_type,
+                        'url' => $ev->page_url,
+                        'title' => GeoIpService::formatPageTitle($ev->page_url),
+                        'product_name' => $ev->product ? $ev->product->name : null,
+                        'time' => $ev->created_at ? $ev->created_at->diffForHumans() : 'Just now',
+                    ];
+                })->values(),
+            ];
+        };
+
+        // 3. Live Visitors (Active in the last 10 minutes)
+        $liveVisitors = TrackingVisitor::where('last_seen_at', '>=', $now->copy()->subMinutes(10))
+            ->with([
+                'sessions' => fn ($q) => $q->latest('started_at')->limit(1),
+                'events' => fn ($q) => $q->where('event_type', '!=', 'heartbeat')->latest('created_at')->limit(6)->with('product'),
+            ])
+            ->orderByDesc('last_seen_at')
+            ->limit(50)
+            ->get();
+
+        // 4. Recent Visitors (Today or up to latest 30 visitors)
+        $recentVisitorsQuery = TrackingVisitor::where('last_seen_at', '>=', $today)
+            ->with([
+                'sessions' => fn ($q) => $q->latest('started_at')->limit(1),
+                'events' => fn ($q) => $q->where('event_type', '!=', 'heartbeat')->latest('created_at')->limit(6)->with('product'),
+            ])
+            ->orderByDesc('last_seen_at')
+            ->limit(30);
+
+        $recentVisitors = $recentVisitorsQuery->get();
+
+        // If today has very few visitors, pad with latest visitors for visibility
+        if ($recentVisitors->count() < 10) {
+            $recentVisitors = TrackingVisitor::with([
+                'sessions' => fn ($q) => $q->latest('started_at')->limit(1),
+                'events' => fn ($q) => $q->where('event_type', '!=', 'heartbeat')->latest('created_at')->limit(6)->with('product'),
+            ])
+                ->orderByDesc('last_seen_at')
+                ->limit(20)
+                ->get();
+        }
+
+        // 5. Live Feed (Last 25 meaningful events with IP and device info)
         $recentEvents = TrackingEvent::with(['visitor', 'product'])
+            ->where('event_type', '!=', 'heartbeat')
             ->orderBy('created_at', 'desc')
-            ->limit(20)
+            ->limit(25)
             ->get()
             ->map(function ($event) {
+                $country = $event->visitor->country ?? 'Unknown';
+
                 return [
                     'id' => $event->id,
                     'type' => $event->event_type,
-                    'time' => $event->created_at->diffForHumans(),
+                    'time' => $event->created_at ? $event->created_at->diffForHumans() : 'Just now',
+                    'ip' => $event->visitor->ip_address ?? 'Unknown IP',
                     'city' => $event->visitor->city ?? 'Unknown',
-                    'country' => $event->visitor->country ?? 'Unknown',
+                    'country' => $country,
+                    'flag' => GeoIpService::getFlag(null, $country),
                     'device' => $event->visitor->device ?? 'Desktop',
+                    'browser' => $event->visitor->browser ?? '',
+                    'os' => $event->visitor->os ?? '',
                     'url' => $event->page_url,
+                    'title' => GeoIpService::formatPageTitle($event->page_url),
                     'product_name' => $event->product ? $event->product->name : null,
                 ];
             });
 
         return response()->json([
             'live_users' => $liveUsersCount,
+            'live_visitors' => $liveVisitors->map($formatVisitor)->values(),
+            'recent_visitors' => $recentVisitors->map($formatVisitor)->values(),
             'today_visitors' => $todayVisitors,
             'today_new' => $todayNewVisitors,
             'today_returning' => $todayReturning,

@@ -13,6 +13,9 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\Setting;
 use App\Models\Tag;
+use App\Models\TrackingEvent;
+use App\Models\TrackingSession;
+use App\Models\TrackingVisitor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +33,9 @@ class CliController extends Controller
         'Setting' => Setting::class,
         'Coupon' => Coupon::class,
         'Media' => Media::class,
+        'TrackingVisitor' => TrackingVisitor::class,
+        'TrackingSession' => TrackingSession::class,
+        'TrackingEvent' => TrackingEvent::class,
     ];
 
     public function execute(Request $request): JsonResponse
