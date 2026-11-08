@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\ProductVariation;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use App\Services\AffiliateService;
 use App\Services\FacebookCAPIService;
 use App\Services\FirebasePushService;
 use Illuminate\Http\Request;
@@ -242,6 +243,15 @@ class CheckoutController extends Controller
             ]);
         }
 
+        // Record Affiliate Referral
+        $affiliateCode = $request->input('affiliate_code')
+            ?? $request->cookie('affiliate_ref')
+            ?? $request->input('ref')
+            ?? session('affiliate_code');
+        if ($affiliateCode) {
+            AffiliateService::recordReferral($order, $affiliateCode);
+        }
+
         $categoryPixels = [];
         foreach ($product->categories as $category) {
             if ($category->fb_pixel_id) {
@@ -470,6 +480,15 @@ class CheckoutController extends Controller
                 'purchase_price' => $bumpProduct->purchase_price ?? 0,
                 'quantity' => 1,
             ]);
+        }
+
+        // Record Affiliate Referral
+        $affiliateCode = $request->input('affiliate_code')
+            ?? $request->cookie('affiliate_ref')
+            ?? $request->input('ref')
+            ?? session('affiliate_code');
+        if ($affiliateCode) {
+            AffiliateService::recordReferral($order, $affiliateCode);
         }
 
         FacebookCAPIService::sendEvent('Purchase', [

@@ -229,7 +229,7 @@ export default function OrdersScreen() {
                 <View style={styles.orderFooter}>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.addressText, { color: colors.textMuted }]} numberOfLines={1}>
-                      📍 {item.shipping_address || item.customer_address}
+                      📍 {item.shipping_address || (item as any).customer_address || 'Standard Delivery'}
                     </Text>
                     <Text style={[styles.paymentText, { color: colors.textMuted }]}>
                       💳 Cash on Delivery
@@ -238,7 +238,7 @@ export default function OrdersScreen() {
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={[styles.totalLabel, { color: colors.textMuted }]}>Total</Text>
                     <Text style={[styles.totalAmount, { color: colors.primary }]}>
-                      {Config.CURRENCY}{Number(item.total_amount ?? item.total).toLocaleString()}
+                      {Config.CURRENCY}{Number(item.total_amount ?? (item as any).total ?? 0).toLocaleString()}
                     </Text>
                   </View>
                 </View>

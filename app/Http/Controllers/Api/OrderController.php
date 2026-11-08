@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\ProductVariation;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use App\Services\AffiliateService;
 use App\Services\FacebookCAPIService;
 use App\Services\FirebasePushService;
 use Illuminate\Http\JsonResponse;
@@ -85,6 +86,7 @@ class OrderController extends Controller
             'items.*.variation_id' => 'nullable|exists:product_variations,id',
             'visitor_id' => 'nullable|string',
             'session_id' => 'nullable|string',
+            'affiliate_code' => 'nullable|string',
         ]);
 
         $deliveryMethod = DeliveryMethod::findOrFail($validated['delivery_method_id']);
@@ -325,6 +327,12 @@ class OrderController extends Controller
             'note' => 'Order placed via API / Mobile App',
         ]);
 
+        // Record Affiliate Referral
+        $affiliateCode = $validated['affiliate_code'] ?? $request->input('ref') ?? $request->input('affiliate_code');
+        if ($affiliateCode) {
+            AffiliateService::recordReferral($order, $affiliateCode);
+        }
+
         if ($visitorId) {
             try {
                 TrackingEvent::create([
@@ -432,6 +440,10 @@ class OrderController extends Controller
 
         // Create log if status changed or note provided
         if ((isset($validated['status']) && $validated['status'] !== $oldStatus) || ! empty($validated['note'])) {
+            if (isset($validated['status']) && $validated['status'] !== $oldStatus) {
+                AffiliateService::handleOrderStatusChanged($order, $oldStatus, $validated['status']);
+            }
+
             OrderLog::create([
                 'order_id' => $order->id,
                 'status' => $validated['status'] ?? $order->status,

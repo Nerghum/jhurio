@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
 
   // Sort sheet
   sheetBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill as any,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },

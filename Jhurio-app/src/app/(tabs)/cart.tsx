@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -19,6 +20,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Config } from '@/constants/config';
 import { Colors, Radius, Shadow, Spacing } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { ApiService } from '@/services/api';
 import { DeliveryMethod, Order } from '@/types';
@@ -28,6 +30,7 @@ export default function CartScreen() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   const {
     items,
@@ -40,6 +43,15 @@ export default function CartScreen() {
     customerAddress, setCustomerAddress,
     customerDistrict, setCustomerDistrict,
   } = useCart();
+
+  useEffect(() => {
+    if (user) {
+      if (!customerName && user.name) setCustomerName(user.name);
+      if (!customerPhone && user.phone) setCustomerPhone(user.phone);
+      if (!customerAddress && user.address) setCustomerAddress(user.address);
+      if ((!customerDistrict || customerDistrict === 'ঢাকা') && user.district) setCustomerDistrict(user.district);
+    }
+  }, [user]);
 
   const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
   const [selectedMethodId, setSelectedMethodId] = useState<number>(1);
@@ -74,8 +86,9 @@ export default function CartScreen() {
     setCouponLoading(true);
     try {
       const result = await ApiService.applyCoupon(couponCode.trim(), subtotal);
-      setAppliedCoupon({ code: couponCode.trim(), discount: result.discount_amount });
-      Alert.alert('🎉 Coupon Applied!', `You saved ${Config.CURRENCY}${result.discount_amount.toLocaleString()}`);
+      const discountVal = result.discount_amount ?? 0;
+      setAppliedCoupon({ code: couponCode.trim(), discount: discountVal });
+      Alert.alert('🎉 Coupon Applied!', `You saved ${Config.CURRENCY}${discountVal.toLocaleString()}`);
     } catch {
       Alert.alert('Invalid Coupon', 'This coupon code is not valid or has expired.');
     } finally {
@@ -98,12 +111,19 @@ export default function CartScreen() {
         district: customerDistrict.trim() || 'Dhaka',
         delivery_method_id: selectedMethodId,
         coupon_code: appliedCoupon?.code || null,
-        items: items.map((item) => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          variation_id: item.variation?.id ?? null,
-        })),
+        items: items
+          .filter((item) => item?.product?.id)
+          .map((item) => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            variation_id: item.variation?.id ?? null,
+          })),
       };
+
+      const activeRef = await AsyncStorage.getItem('@jhurio_active_ref_code');
+      if (activeRef) {
+        payload.affiliate_code = activeRef;
+      }
 
       const res = await ApiService.createOrder(payload);
       setCreatedOrder(res.order);
@@ -203,12 +223,15 @@ export default function CartScreen() {
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 160, padding: Spacing.three, gap: Spacing.two }}>
-              {items.map((item) => {
-                const imgUrl = item.product.thumbnail?.url;
-                const price = Number(item.variation?.price ?? item.product.price);
+              {items.map((item, index) => {
+                const prod = item.product;
+                if (!prod) return null;
+                const imgUrl = prod.thumbnail?.url;
+                const price = Number(item.variation?.price ?? prod.price ?? 0);
+                const itemKey = `${prod.id}-${item.variation?.id ?? 'base'}-${index}`;
                 return (
                   <View
-                    key={item.cartKey}
+                    key={itemKey}
                     style={[styles.cartItem, { backgroundColor: colors.surface, borderColor: colors.border, ...Shadow.sm }]}>
                     <View style={[styles.cartImg, { backgroundColor: colors.backgroundElement }]}>
                       {imgUrl ? (
@@ -219,7 +242,7 @@ export default function CartScreen() {
                     </View>
                     <View style={styles.cartInfo}>
                       <Text numberOfLines={2} style={[styles.cartName, { color: colors.text }]}>
-                        {item.product.name}
+                        {prod.name}
                       </Text>
                       {item.variation && (
                         <Text style={[styles.cartVariant, { color: colors.textMuted }]}>{item.variation.name}</Text>
@@ -233,19 +256,19 @@ export default function CartScreen() {
                     </View>
                     <View style={styles.cartActions}>
                       <Pressable
-                        onPress={() => removeFromCart(item.product.id, item.variation?.id)}
+                        onPress={() => removeFromCart(prod.id, item.variation?.id)}
                         style={[styles.deleteBtn, { backgroundColor: '#fee2e2' }]}>
                         <Ionicons name="trash-outline" size={15} color={colors.danger} />
                       </Pressable>
                       <View style={[styles.qtyControl, { borderColor: colors.border }]}>
                         <Pressable
-                          onPress={() => updateQuantity(item.product.id, item.quantity - 1, item.variation?.id)}
+                          onPress={() => updateQuantity(prod.id, item.quantity - 1, item.variation?.id)}
                           style={[styles.qtyBtnSmall, { backgroundColor: colors.backgroundElement }]}>
                           <Ionicons name="remove" size={14} color={colors.text} />
                         </Pressable>
                         <Text style={[styles.qtyNumSmall, { color: colors.text }]}>{item.quantity}</Text>
                         <Pressable
-                          onPress={() => updateQuantity(item.product.id, item.quantity + 1, item.variation?.id)}
+                          onPress={() => updateQuantity(prod.id, item.quantity + 1, item.variation?.id)}
                           style={[styles.qtyBtnSmall, { backgroundColor: colors.primary }]}>
                           <Ionicons name="add" size={14} color="#fff" />
                         </Pressable>

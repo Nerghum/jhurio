@@ -8,6 +8,7 @@ use App\Models\DeliveryMethod;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\AffiliateService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -199,6 +200,11 @@ class OrderController extends Controller
         $hasNote = ! empty($request->note);
 
         if ($statusChanged || $hasNote) {
+            $oldStatus = $order->status;
+            if ($statusChanged) {
+                AffiliateService::handleOrderStatusChanged($order, $oldStatus, $request->status);
+            }
+
             $order->update(['status' => $request->status]);
 
             // Log the change with note

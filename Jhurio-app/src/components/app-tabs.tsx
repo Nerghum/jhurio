@@ -1,6 +1,6 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 import React from 'react';
-import { useColorScheme } from 'react-native';
+import { StyleSheet, Text, useColorScheme, View } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
@@ -15,6 +15,7 @@ export default function AppTabs() {
       backgroundColor={colors.surface}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.primary } }}>
+
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
@@ -46,6 +47,24 @@ export default function AppTabs() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="affiliate">
+        <NativeTabs.Trigger.Label>Affiliate</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/affiliate.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="account">
+        <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/account.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
+
+const styles = StyleSheet.create({});

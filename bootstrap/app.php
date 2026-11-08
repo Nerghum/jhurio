@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\TrackAffiliateReferral;
 use App\Http\Middleware\VerifyApiToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return route('account.login');
         });
+        $middleware->web(append: [
+            TrackAffiliateReferral::class,
+        ]);
         $middleware->alias([
             'api.auth' => VerifyApiToken::class,
             'admin' => AdminMiddleware::class,

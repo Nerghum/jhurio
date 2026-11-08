@@ -380,7 +380,7 @@
                     <ul class="space-y-3 sm:space-y-4">
                         <li><a href="{{ route('shop.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Shop All Products</a></li>
                         <li><a href="{{ route('about') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Our Story</a></li>
-                        <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Flash Sales</a></li>
+                        <li><a href="{{ route('affiliate.index') }}" class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Affiliate Program</a></li>
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Top Categories</a></li>
                     </ul>
                 </div>
@@ -392,7 +392,7 @@
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Track Your Order</a></li>
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Return Policy</a></li>
                         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Shipping Info</a></li>
-                        <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">FAQs & Support</a></li>
+                        <li><a href="{{ route('affiliate.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Partner Program</a></li>
                     </ul>
                 </div>
 

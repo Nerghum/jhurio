@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AffiliateController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CliController;
@@ -102,3 +103,12 @@ Route::middleware(['api.auth'])->group(function () {
 
 // Analytics Tracking Endpoint
 Route::post('/track', [TrackingController::class, 'track']);
+
+// ─── Affiliate Program API (Mobile App & Web) ────────────────
+Route::prefix('affiliate')->group(function () {
+    Route::post('/register', [AffiliateController::class, 'register']);
+    Route::post('/login', [AffiliateController::class, 'login']);
+    Route::get('/dashboard', [AffiliateController::class, 'dashboard']);
+    Route::post('/payout-request', [AffiliateController::class, 'requestPayout']);
+    Route::get('/links', [AffiliateController::class, 'links']);
+});

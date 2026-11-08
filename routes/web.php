@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AbandonedCartController;
 use App\Http\Controllers\Admin\AccountsController;
+use App\Http\Controllers\Admin\AffiliateController as AdminAffiliateController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AffiliateWebController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -98,6 +100,16 @@ Route::prefix('account')->name('account.')->group(function () {
 });
 
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+// ─── Affiliate Partner Portal ───────────────────────────────
+Route::prefix('affiliate')->name('affiliate.')->group(function () {
+    Route::get('/', [AffiliateWebController::class, 'index'])->name('index');
+    Route::post('/register', [AffiliateWebController::class, 'register'])->name('register');
+    Route::post('/login', [AffiliateWebController::class, 'login'])->name('login');
+    Route::get('/dashboard', [AffiliateWebController::class, 'dashboard'])->name('dashboard');
+    Route::post('/payout', [AffiliateWebController::class, 'requestPayout'])->name('payout');
+    Route::post('/logout', [AffiliateWebController::class, 'logout'])->name('logout');
+});
 
 // ─── Admin ──────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -208,5 +220,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Product Bundles
         Route::resource('bundles', ProductBundleController::class)->except(['show']);
+
+        // Affiliates Management
+        Route::prefix('affiliates')->name('affiliates.')->group(function () {
+            Route::get('/', [AdminAffiliateController::class, 'index'])->name('index');
+            Route::get('/referrals', [AdminAffiliateController::class, 'referrals'])->name('referrals');
+            Route::get('/payouts', [AdminAffiliateController::class, 'payouts'])->name('payouts');
+            Route::post('/payouts/{payout}/approve', [AdminAffiliateController::class, 'approvePayout'])->name('payouts.approve');
+            Route::post('/payouts/{payout}/reject', [AdminAffiliateController::class, 'rejectPayout'])->name('payouts.reject');
+            Route::get('/{affiliate}', [AdminAffiliateController::class, 'show'])->name('show');
+            Route::post('/{affiliate}/approve', [AdminAffiliateController::class, 'approve'])->name('approve');
+            Route::post('/{affiliate}/reject', [AdminAffiliateController::class, 'reject'])->name('reject');
+        });
     });
 });

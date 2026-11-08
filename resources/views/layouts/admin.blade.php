@@ -125,6 +125,48 @@
                 <span>Accounts</span>
             </a>
 
+            <!-- Affiliates Group -->
+            @php 
+                $isAffiliatesActive = request()->routeIs('admin.affiliates.*');
+                $pendingAffiliatesBadge = \App\Models\Affiliate::where('status', 'pending')->count();
+                $pendingPayoutsBadge = \App\Models\AffiliatePayout::where('status', 'pending')->count();
+                $totalAffiliateAlerts = $pendingAffiliatesBadge + $pendingPayoutsBadge;
+            @endphp
+            <div x-data="{ open: {{ $isAffiliatesActive ? 'true' : 'false' }} }" class="relative">
+                <div @click="open = !open" class="flex items-center justify-between px-4 py-3 {{ $isAffiliatesActive ? 'bg-secondary/5 dark:bg-secondary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all cursor-pointer">
+                    <div class="flex items-center">
+                        <i data-lucide="share-2" class="w-5 h-5 mr-3 {{ $isAffiliatesActive ? 'text-primary' : '' }}"></i>
+                        <span>Affiliates</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        @if($totalAffiliateAlerts > 0)
+                            <span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" title="{{ $totalAffiliateAlerts }} pending affiliate actions">{{ $totalAffiliateAlerts }}</span>
+                        @endif
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 {{ $isAffiliatesActive ? 'text-primary' : 'text-gray-400' }}" :class="{ 'rotate-180': open }"></i>
+                    </div>
+                </div>
+                
+                <div x-show="open" 
+                     x-transition
+                     class="pl-11 pr-4 py-2 space-y-1 mt-1 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
+                    <a href="{{ route('admin.affiliates.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.index') || request()->routeIs('admin.affiliates.show') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
+                        <span>All Affiliates</span>
+                        @if($pendingAffiliatesBadge > 0)
+                            <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">{{ $pendingAffiliatesBadge }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('admin.affiliates.referrals') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.referrals') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                        Referral Sales
+                    </a>
+                    <a href="{{ route('admin.affiliates.payouts') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.payouts') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
+                        <span>Payout Requests</span>
+                        @if($pendingPayoutsBadge > 0)
+                            <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-purple-600 text-white">{{ $pendingPayoutsBadge }}</span>
+                        @endif
+                    </a>
+                </div>
+            </div>
+
             <!-- Media -->
             <a href="{{ route('admin.media.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.media.*') ? 'bg-secondary/10 dark:bg-secondary/20 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-100 font-medium' }} rounded-xl transition-all">
                 <i data-lucide="image" class="w-5 h-5 mr-3 {{ request()->routeIs('admin.media.*') ? 'text-primary' : '' }}"></i>
@@ -294,9 +336,58 @@
                 <h1 class="text-xl font-semibold text-gray-800 dark:text-white truncate max-w-[200px] sm:max-w-none">@yield('header', 'Dashboard')</h1>
             </div>
             <div class="flex items-center space-x-4">
-                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                </button>
+                <div x-data="{ notifyOpen: false }" class="relative">
+                    @php
+                        $topPendingAffiliates = \App\Models\Affiliate::where('status', 'pending')->latest()->take(4)->get();
+                        $topPendingPayouts = \App\Models\AffiliatePayout::where('status', 'pending')->with('affiliate')->latest()->take(4)->get();
+                        $totalHeaderAlerts = $topPendingAffiliates->count() + $topPendingPayouts->count();
+                    @endphp
+                    <button @click="notifyOpen = !notifyOpen" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors relative p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        @if($totalHeaderAlerts > 0)
+                            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-gray-800 animate-pulse"></span>
+                        @endif
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div x-show="notifyOpen" 
+                         @click.away="notifyOpen = false" 
+                         x-transition 
+                         class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-2" 
+                         style="display: none;" 
+                         x-cloak>
+                        <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase text-gray-500">Notifications</span>
+                            @if($totalHeaderAlerts > 0)
+                                <span class="text-[10px] font-bold bg-primary text-white px-2 py-0.5 rounded-full">{{ $totalHeaderAlerts }} New</span>
+                            @endif
+                        </div>
+                        <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-72 overflow-y-auto">
+                            @foreach($topPendingAffiliates as $pAff)
+                                <a href="{{ route('admin.affiliates.index', ['status' => 'pending']) }}" class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 block rounded-xl transition">
+                                    <p class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                        <i data-lucide="user-plus" class="w-3.5 h-3.5 text-amber-500"></i> New Affiliate Application
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{{ $pAff->name }} ({{ $pAff->phone }}) applied.</p>
+                                    <span class="text-[10px] text-gray-400">{{ $pAff->created_at->diffForHumans() }}</span>
+                                </a>
+                            @endforeach
+                            @foreach($topPendingPayouts as $pPay)
+                                <a href="{{ route('admin.affiliates.payouts', ['status' => 'pending']) }}" class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 block rounded-xl transition">
+                                    <p class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                        <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-500"></i> Payout Request ৳{{ number_format($pPay->amount, 0) }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{{ $pPay->affiliate->name ?? 'Affiliate' }} via {{ strtoupper($pPay->payout_method) }}</p>
+                                    <span class="text-[10px] text-gray-400">{{ $pPay->created_at->diffForHumans() }}</span>
+                                </a>
+                            @endforeach
+                            @if($totalHeaderAlerts === 0)
+                                <div class="p-6 text-center text-gray-400 text-xs">
+                                    No pending notifications. All caught up!
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
                 <div class="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-white font-bold shadow-sm">
                     A
                 </div>

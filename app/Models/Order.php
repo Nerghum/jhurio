@@ -21,6 +21,8 @@ class Order extends Model
         'status',
         'delivery_method_id',
         'delivery_cost',
+        'affiliate_id',
+        'affiliate_code',
     ];
 
     public function deliveryMethod()
@@ -31,6 +33,16 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function affiliate()
+    {
+        return $this->belongsTo(Affiliate::class);
+    }
+
+    public function affiliateReferral()
+    {
+        return $this->hasOne(AffiliateReferral::class);
     }
 
     public function logs()

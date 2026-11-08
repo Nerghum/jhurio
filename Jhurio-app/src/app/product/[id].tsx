@@ -77,8 +77,8 @@ export default function ProductDetailScreen() {
   const [addedAnim] = useState(new Animated.Value(1));
   const [wishlist, setWishlist] = useState(false);
 
-  const mainScrollRef = useRef<ScrollView>(null);
-  const thumbScrollRef = useRef<ScrollView>(null);
+  const mainScrollRef = useRef<any>(null);
+  const thumbScrollRef = useRef<any>(null);
 
   useEffect(() => {
     if (!id) return;

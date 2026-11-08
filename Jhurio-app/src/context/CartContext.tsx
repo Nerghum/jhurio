@@ -50,7 +50,32 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           AsyncStorage.getItem(STORAGE_KEYS.CUSTOMER_DISTRICT),
         ]);
 
-        if (savedCart) setItems(JSON.parse(savedCart));
+        if (savedCart) {
+          try {
+            const parsed = JSON.parse(savedCart);
+            if (Array.isArray(parsed)) {
+              const sanitized: CartItem[] = parsed
+                .filter((it: any) => it && (it.product || it.id))
+                .map((it: any) => {
+                  if (it.product && it.product.id) return it;
+                  return {
+                    product: {
+                      id: it.id || 0,
+                      name: it.name || 'Product',
+                      price: it.price || 0,
+                      slug: it.slug || '',
+                      status: 'published',
+                      thumbnail: it.thumbnail || (it.image ? { id: 0, url: it.image } : undefined),
+                    },
+                    quantity: it.quantity || 1,
+                    variation: it.variation,
+                    selectedTier: it.selectedTier,
+                  };
+                });
+              setItems(sanitized);
+            }
+          } catch {}
+        }
         if (savedPhone) setCustomerPhoneState(savedPhone);
         if (savedName) setCustomerNameState(savedName);
         if (savedAddress) setCustomerAddressState(savedAddress);
@@ -143,10 +168,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveCart([]);
   };
 
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = items.reduce((sum, item) => sum + (item?.quantity || 0), 0);
 
   const subtotal = items.reduce((sum, item) => {
-    let unitPrice = Number(item.variation?.price ?? item.product.price);
+    if (!item?.product) return sum;
+    let unitPrice = Number(item.variation?.price ?? item.product?.price ?? 0);
 
     // Apply bundle tier discount if tier matched
     if (item.selectedTier) {
@@ -160,7 +186,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    return sum + unitPrice * item.quantity;
+    return sum + unitPrice * (item.quantity || 1);
   }, 0);
 
   return (
