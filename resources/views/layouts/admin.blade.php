@@ -160,16 +160,16 @@
                 <div x-show="open" 
                      x-transition
                      class="pl-11 pr-4 py-2 space-y-1 mt-1 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl">
-                    <a href="{{ route('admin.affiliates.index') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.index') || request()->routeIs('admin.affiliates.show') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('admin.affiliates.index') ? route('admin.affiliates.index') : url('/admin/affiliates') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.index') || request()->routeIs('admin.affiliates.show') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
                         <span>All Affiliates</span>
                         @if($pendingAffiliatesBadge > 0)
                             <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">{{ $pendingAffiliatesBadge }}</span>
                         @endif
                     </a>
-                    <a href="{{ route('admin.affiliates.referrals') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.referrals') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('admin.affiliates.referrals') ? route('admin.affiliates.referrals') : url('/admin/affiliates/referrals') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.referrals') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700' }}">
                         Referral Sales
                     </a>
-                    <a href="{{ route('admin.affiliates.payouts') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.payouts') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('admin.affiliates.payouts') ? route('admin.affiliates.payouts') : url('/admin/affiliates/payouts') }}" class="block px-3 py-2 text-sm rounded-lg transition-colors {{ request()->routeIs('admin.affiliates.payouts') ? 'text-primary font-medium bg-white dark:bg-gray-700 shadow-sm flex items-center justify-between' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 flex items-center justify-between' }}">
                         <span>Payout Requests</span>
                         @if($pendingPayoutsBadge > 0)
                             <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-purple-600 text-white">{{ $pendingPayoutsBadge }}</span>
@@ -385,7 +385,7 @@
                         </div>
                         <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-72 overflow-y-auto">
                             @foreach($topPendingAffiliates as $pAff)
-                                <a href="{{ route('admin.affiliates.index', ['status' => 'pending']) }}" class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 block rounded-xl transition">
+                                <a href="{{ \Illuminate\Support\Facades\Route::has('admin.affiliates.index') ? route('admin.affiliates.index', ['status' => 'pending']) : url('/admin/affiliates?status=pending') }}" class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 block rounded-xl transition">
                                     <p class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                         <i data-lucide="user-plus" class="w-3.5 h-3.5 text-amber-500"></i> New Affiliate Application
                                     </p>
@@ -394,7 +394,7 @@
                                 </a>
                             @endforeach
                             @foreach($topPendingPayouts as $pPay)
-                                <a href="{{ route('admin.affiliates.payouts', ['status' => 'pending']) }}" class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 block rounded-xl transition">
+                                <a href="{{ \Illuminate\Support\Facades\Route::has('admin.affiliates.payouts') ? route('admin.affiliates.payouts', ['status' => 'pending']) : url('/admin/affiliates/payouts?status=pending') }}" class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 block rounded-xl transition">
                                     <p class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                                         <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-500"></i> Payout Request ৳{{ number_format($pPay->amount, 0) }}
                                     </p>
