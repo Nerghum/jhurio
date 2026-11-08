@@ -19,6 +19,7 @@ use App\Models\TrackingVisitor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class CliController extends Controller
 {
@@ -51,6 +52,7 @@ class CliController extends Controller
             'quick_hero' => $this->handleQuickHero($request),
             'quick_order' => $this->handleQuickOrder($request),
             'quick_stock' => $this->handleQuickStock($request),
+            'migrate' => $this->handleMigrate($request),
             default => response()->json(['error' => "Unknown action: {$action}"], 400),
         };
     }
@@ -260,5 +262,24 @@ class CliController extends Controller
             'product_id' => $product->id,
             'stock_quantity' => $product->stock_quantity,
         ]);
+    }
+
+    protected function handleMigrate(Request $request): JsonResponse
+    {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $output = Artisan::output();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Database migration completed successfully',
+                'output' => trim($output),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

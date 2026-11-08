@@ -128,8 +128,19 @@
             <!-- Affiliates Group -->
             @php 
                 $isAffiliatesActive = request()->routeIs('admin.affiliates.*');
-                $pendingAffiliatesBadge = \App\Models\Affiliate::where('status', 'pending')->count();
-                $pendingPayoutsBadge = \App\Models\AffiliatePayout::where('status', 'pending')->count();
+                $pendingAffiliatesBadge = 0;
+                $pendingPayoutsBadge = 0;
+                try {
+                    if (\Illuminate\Support\Facades\Schema::hasTable('affiliates')) {
+                        $pendingAffiliatesBadge = \App\Models\Affiliate::where('status', 'pending')->count();
+                    }
+                    if (\Illuminate\Support\Facades\Schema::hasTable('affiliate_payouts')) {
+                        $pendingPayoutsBadge = \App\Models\AffiliatePayout::where('status', 'pending')->count();
+                    }
+                } catch (\Throwable $e) {
+                    $pendingAffiliatesBadge = 0;
+                    $pendingPayoutsBadge = 0;
+                }
                 $totalAffiliateAlerts = $pendingAffiliatesBadge + $pendingPayoutsBadge;
             @endphp
             <div x-data="{ open: {{ $isAffiliatesActive ? 'true' : 'false' }} }" class="relative">
@@ -338,8 +349,19 @@
             <div class="flex items-center space-x-4">
                 <div x-data="{ notifyOpen: false }" class="relative">
                     @php
-                        $topPendingAffiliates = \App\Models\Affiliate::where('status', 'pending')->latest()->take(4)->get();
-                        $topPendingPayouts = \App\Models\AffiliatePayout::where('status', 'pending')->with('affiliate')->latest()->take(4)->get();
+                        $topPendingAffiliates = collect();
+                        $topPendingPayouts = collect();
+                        try {
+                            if (\Illuminate\Support\Facades\Schema::hasTable('affiliates')) {
+                                $topPendingAffiliates = \App\Models\Affiliate::where('status', 'pending')->latest()->take(4)->get();
+                            }
+                            if (\Illuminate\Support\Facades\Schema::hasTable('affiliate_payouts')) {
+                                $topPendingPayouts = \App\Models\AffiliatePayout::where('status', 'pending')->with('affiliate')->latest()->take(4)->get();
+                            }
+                        } catch (\Throwable $e) {
+                            $topPendingAffiliates = collect();
+                            $topPendingPayouts = collect();
+                        }
                         $totalHeaderAlerts = $topPendingAffiliates->count() + $topPendingPayouts->count();
                     @endphp
                     <button @click="notifyOpen = !notifyOpen" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors relative p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700">

@@ -35,6 +35,7 @@ use App\Http\Controllers\OrderController as FrontendOrderController;
 use App\Http\Controllers\ProductController as FrontendProductController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 // ─── Frontend ───────────────────────────────────────────────
@@ -232,5 +233,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/{affiliate}/approve', [AdminAffiliateController::class, 'approve'])->name('approve');
             Route::post('/{affiliate}/reject', [AdminAffiliateController::class, 'reject'])->name('reject');
         });
+
+        // Run Database Migrations
+        Route::get('/run-migrations', function () {
+            try {
+                Artisan::call('migrate', ['--force' => true]);
+                $output = Artisan::output();
+
+                return response('<pre style="background:#111;color:#10b981;padding:20px;font-family:monospace;font-size:14px;border-radius:8px;">'.htmlspecialchars($output ?: 'No pending migrations.').'</pre><br><a href="'.route('admin.dashboard').'" style="display:inline-block;padding:10px 18px;background:#059669;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">Return to Dashboard</a>', 200);
+            } catch (Throwable $e) {
+                return response('<pre style="background:#111;color:#ef4444;padding:20px;font-family:monospace;font-size:14px;border-radius:8px;">Migration Error: '.htmlspecialchars($e->getMessage()).'</pre><br><a href="'.route('admin.dashboard').'" style="display:inline-block;padding:10px 18px;background:#ef4444;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">Return to Dashboard</a>', 500);
+            }
+        })->name('run_migrations');
     });
 });
